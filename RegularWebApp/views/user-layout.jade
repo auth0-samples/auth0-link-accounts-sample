@@ -1,0 +1,14 @@
+extends layout
+
+block append rightNavBar
+  li.dropdown
+    a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-expanded='false')
+      span.userName 
+        img.img-circle.profile-image(src='#{user.picture}') 
+        |  #{user.displayName}
+      span.caret                        
+    ul.dropdown-menu(role='menu')
+      li
+        a(href='/user') Account settings                  
+      li
+        a(href='/logout') Logout

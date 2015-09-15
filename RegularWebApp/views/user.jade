@@ -1,0 +1,55 @@
+extends user-layout
+
+mixin identityMixin(identity)
+  .col-lg-4
+    .panel.panel-default
+      .panel-heading #{identity.connection}
+      .panel-body
+        p provider: #{identity.provider}
+        p isSocial: #{identity.isSocial}
+        p user-id: #{identity['user_id']}
+        p profileData: #{JSON.stringify(identity.profileData)}  
+
+mixin readonlyField(id,label,val)
+  .form-group
+    label(for="#{id}" class="col-lg-2 control-label") #{label} 
+    .col-lg-4
+      input(type="text" class="form-control" readonly="readonly" id="#{id}" placeholder="#{label}" value="#{val}")
+
+block content
+  panel.panel-primary
+    .panel-heading Root Profile
+    .panel-body
+      form.form-horizonal
+        fieldset
+          +readonlyField("provider","Provider",user.provider)
+          +readonlyField("displayName","Display Name",user.displayName)
+          +readonlyField("id","Id",user.id)
+          +readonlyField("name","Name",user.name)
+          +readonlyField("picture","Pictures",user.pictures)
+          +readonlyField("nickname","Nickname",user.nickname)
+  hr
+  h4 Linked Accounts
+  each identity in user.identities
+    +identityMixin(identity)
+
+  button(onclick="linkAccount()") Link another account
+
+  script.
+    var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
+    function linkAccount() {
+      lock.showSignin({
+        callbackURL: '#{env.AUTH0_CALLBACK_URL}',
+        rememberLastLogin: false,
+        dict: {
+          signin: {
+            title: 'Link another account'
+          }
+        },
+        responseType: 'code',
+        authParams: {
+          scope: 'openid profile',
+          access_token: '#{access_token}'
+        }
+      });
+    }
