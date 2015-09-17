@@ -122,21 +122,6 @@ block content
       });
     }
 
-    function getUser(userId){
-      var url = "https://" + auth0Domain + "/api/v2/users/" + userId;
-      $.ajax({
-        type:"GET",
-        url: url,
-        headers:{
-          'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJqcU9YQTk3cU1ZVFlrNndEWnNiUVhKQnY0VllpQXJkTiIsInNjb3BlcyI6eyJ1c2VycyI6eyJhY3Rpb25zIjpbInJlYWQiXX19LCJpYXQiOjE0NDI0MTU2NzQsImp0aSI6IjgyMGY3NTE0Mzk4NTk4MGEwZTFlYjdjY2YyZTRlODYwIn0.Z9kUIfXj9q70t6pkdMb-L6UFW9EUMR2LspZgG-R57V8'
-        }
-      }).then(function(user){
-        console.log("user",user);
-      }).fail(function(err){
-        console.log("err getting user ",err);
-      });
-    }
-
     function isRootIdentity(identity){
       return identity.provider === rootUserId.split("|")[0] && identity.user_id === rootUserId.split("|")[1];
     }
