@@ -20,11 +20,10 @@ var strategy = new Auth0Strategy({
     clientID:     process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
     callbackURL:  process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback',
-    passReqToCallback: true
+    passReqToCallback: true //this is needed for having the req available in the callback and gain access to the session
   }, function(req, accessToken, refreshToken, extraParams, profile, done) {
-
-    console.log("accessToken",accessToken);
-
+    console.log("--------------------------------------------");
+    console.log("profile",profile);
     // accessToken is the token to call Auth0 API. We will need it to link accounts
     req.session.accessToken = accessToken;
     // extraParams.id_token has the JSON Web Token

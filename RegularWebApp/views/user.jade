@@ -1,45 +1,89 @@
 extends user-layout
 
 mixin identityMixin(identity)
-  .col-lg-4
-    .panel.panel-default
-      .panel-heading #{identity.connection}
-      .panel-body
-        p provider: #{identity.provider}
-        p isSocial: #{identity.isSocial}
-        p user-id: #{identity['user_id']}
-        p profileData: #{JSON.stringify(identity.profileData)}  
+  tr(data-id="#{identity.user_id}")
+    td #{identity.provider}
+    td 
+      img.profile-image(src="#{identity.profileData && identity.profileData.picture}")
+    td #{identity.profileData && identity.profileData.name}
+    td #{identity.profileData && identity.profileData.email}
+      if (identity.profileData && identity.profileData.email && identity.profileData.email_verified)
+        p (verified)
+      else if (identity.profileData && identity.profileData.email)
+        p (pending)
+    td
+      button.btn.btn-danger.btn-xs.unlink(onclick="unlinkAccount('#{identity.provider}','#{identity.user_id}')") unlink 
 
-mixin readonlyField(id,label,val)
-  .form-group
-    label(for="#{id}" class="col-lg-2 control-label") #{label} 
-    .col-lg-4
-      input(type="text" class="form-control" readonly="readonly" id="#{id}" placeholder="#{label}" value="#{val}")
+mixin description(label,val)
+  dt #{label}
+  dd #{val}
 
 block content
-  panel.panel-primary
-    .panel-heading Root Profile
+  .panel.panel-default
+    .panel-heading Root Profile 
     .panel-body
-      form.form-horizonal
-        fieldset
-          +readonlyField("provider","Provider",user.provider)
-          +readonlyField("displayName","Display Name",user.displayName)
-          +readonlyField("id","Id",user.id)
-          +readonlyField("name","Name",user.name)
-          +readonlyField("picture","Pictures",user.pictures)
-          +readonlyField("nickname","Nickname",user.nickname)
-  hr
-  h4 Linked Accounts
-  each identity in user.identities
-    +identityMixin(identity)
+      dl.dl-horizontal
+        +description("email",user.email)
+        +description("email_verified",user.email_verified)
+        +description("name",user.name)
+        +description("given_name",user.given_name)
+        +description("family_name",user.family_name)
+        +description("picture",user.picture)
+        +description("locale",user.locale)
+        +description("user_id",user.user_id)
+        +description("nickname",user.nickname)
+        +description("user_metadata",JSON.stringify(user.user_metadata,null,4))
+        +description("app_metadata",JSON.stringify(user.app_metadata,null,4))
 
-  button(onclick="linkAccount()") Link another account
+  .panel.panel-default
+    .panel-heading Linked Accounts
+    if (user.identities.length > 1)
+      table.table.identities
+        thead
+          tr
+            th provider
+            th picture
+            th name
+            th email
+            th actions
+        tbody
+        each identity in user.identities
+          +identityMixin(identity)
+    else
+      .panel-body
+        p You don't have any accounts linked.
+    .panel-footer
+      button.btn.btn-primary(onclick="linkAccount()") Link another account
+
+  .modal#alert-login-again
+    .modal-dialog.modal-sm
+        .modal-content.alert.alert-success
+          .modal-body 
+            h5 You have successfully unlinked the account! 
+            p We suggest you login again to see the changes reflected in your account.
+          .modal-footer
+            button.btn.btn-primary.login-again(onclick="loginAgain()") Login
+            button.btn.btn-default.login-again(onclick="$('#alert-login-again').hide()") Later
 
   script.
-    var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
+    var auth0Domain = '#{env.AUTH0_DOMAIN}';
+    var accessToken = '#{access_token}';
+    var callbackURL = '#{env.AUTH0_CALLBACK_URL}';
+    var clientId = '#{env.AUTH0_CLIENT_ID}';
+    var rootUserId = '#{user.user_id}';
+    var rootUserProvider = '#{provider}';
+    var user = !{JSON.stringify(user)};
+    console.log("user",user);
+    var rootUserConnection = $.grep( user.identities, function( identity ) {
+          return identity.user_id === (rootUserId.indexOf('|') > 0 ? rootUserId.split('|')[1] : rootUserId);
+      })[0].connection;
+    console.log("rootCOnnection",rootUserConnection);
+
+    var lock = new Auth0Lock(clientId, auth0Domain);
+
     function linkAccount() {
       lock.showSignin({
-        callbackURL: '#{env.AUTH0_CALLBACK_URL}',
+        callbackURL: callbackURL,
         rememberLastLogin: false,
         dict: {
           signin: {
@@ -49,7 +93,62 @@ block content
         responseType: 'code',
         authParams: {
           scope: 'openid profile',
-          access_token: '#{access_token}'
+          access_token: accessToken
         }
       });
     }
+
+    function unlinkAccount(provider,userId){
+      var data={
+        access_token: accessToken,
+        user_id: provider+"|"+userId
+      };
+      $.ajax({
+        type: "POST",
+        url: `https://${auth0Domain}/unlink`,
+        data: data
+      }).then(function(data){
+        $("#alert-login-again").show();
+      }).fail(function(err){
+        alert("error"+err);
+      });
+    }
+
+    function loginAgain(){
+      lock.$auth0.signin({
+        callbackURL: callbackURL,
+        scope: 'openid profile',
+        connection: rootUserConnection
+      });
+    }
+
+    function getUser(userId){
+      var url = "https://" + auth0Domain + "/api/v2/users/" + userId;
+      $.ajax({
+        type:"GET",
+        url: url,
+        headers:{
+          'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJqcU9YQTk3cU1ZVFlrNndEWnNiUVhKQnY0VllpQXJkTiIsInNjb3BlcyI6eyJ1c2VycyI6eyJhY3Rpb25zIjpbInJlYWQiXX19LCJpYXQiOjE0NDI0MTU2NzQsImp0aSI6IjgyMGY3NTE0Mzk4NTk4MGEwZTFlYjdjY2YyZTRlODYwIn0.Z9kUIfXj9q70t6pkdMb-L6UFW9EUMR2LspZgG-R57V8'
+        }
+      }).then(function(user){
+        console.log("user",user);
+      }).fail(function(err){
+        console.log("err getting user ",err);
+      });
+    }
+
+    function isRootIdentity(identity){
+      return identity.provider === rootUserId.split("|")[0] && identity.user_id === rootUserId.split("|")[1];
+    }
+
+    $(document).ready(function() {
+      $.each(user.identities,function(index,identity){
+        if (isRootIdentity(identity)){
+          //$(`table.identities tr[data-id='${identity.user_id}'] button.unlink`).hide();
+          $(`table.identities tr[data-id='${identity.user_id}']`).hide();
+        }
+      });
+      
+    });
+
+

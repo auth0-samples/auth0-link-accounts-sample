@@ -4,17 +4,19 @@ Example of how manage linked accounts
 ## Scenarios
 There are many typicall scenarios related to linking accounts. We can describe some of them:
 
-### 1st Scenario: Automatic Account Linking
+
+
+### 1. Automatic Account Linking
 There is a sample [Account Linking Rule](https://github.com/auth0/rules/blob/master/rules/link-users-by-email.md) for automatically linking users by email on authentication. 
 In this case the user authenticates to the App using Auth0, and by configuring this rule, it will automatically link other accounts with same email address.
 
-### 2nd Scenario: Manually link accounts, starting from an App button
+### 2. Manually link accounts, starting from an App button
 In this case the user logins to the App using any of the available identity providers. He then has the option within the app, to link the account with other accounts. This can be useful in case of a user that first registered with username & password, but then wants to use a social login instead to don't have to remember the password.
 Another use case, is when the app wants to interact with several social APIs, like posting a message to Twitter & Facebook at the same time.
 * [SPA example](/SPA)
 * [Regular Web App example](/RegularWebApp)
 
-### 3rd Scenario: Merge account settings from different linked accounts
+### 3. Merge account settings from different linked accounts
 In this scenario a user may have logged in to the app with an account and save some preferences. Then he logins with another account and have some other data associated with that. Finally he merges the two accounts and have to solve conflicts and merge metadata.
 
 ## Install

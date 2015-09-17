@@ -6,7 +6,7 @@ block content
   h1= title
   p Welcome to #{title}
   br
-  button(onclick="signin()") Login
+  button.btn.btn-primary(onclick="signin()") Login
 
   script.
     var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
