@@ -17,7 +17,9 @@ Another use case, is when the app wants to interact with several social APIs, li
 * [Regular Web App example](/RegularWebApp)
 
 ### 3. Merge account settings from different linked accounts
-In this scenario a user may have logged in to the app with an account and save some preferences. Then he logins with another account and have some other data associated with that. Finally he merges the two accounts and have to solve conflicts and merge metadata.
+In this scenario a user may have logged in to the app with an account and save some preferences. Then he logins with another account and have some other data associated with that. The app checks if there are associated accounts created on login, and sugget to link the accounts. The app and/or the user has the possibility of merging the associated data before linking.
+
+[Suggest Linking Accounts Sample](/SuggestLinking)
 
 ## Install
 How to get the sample or install the product

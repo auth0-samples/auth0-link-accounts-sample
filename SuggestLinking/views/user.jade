@@ -1,0 +1,136 @@
+extends user-layout
+
+mixin suggestedUserMixin(identity)
+  tr(data-id='#{identity.user_id}')
+    td #{identity.provider}
+    td 
+      img.profile-image(src='#{identity.profileData && identity.profileData.picture}')
+    td #{identity.name}
+    td #{identity.nickname}
+    td #{identity.user_metadata}
+    td #{identity.app_metadata}  
+    td
+      button.btn.btn-success.btn-xs.unlink(onclick='linkAccount("#{identity.user_id}")') link 
+
+mixin identityMixin(identity)
+  tr(data-id='#{identity.user_id}')
+    td #{identity.provider}
+    td 
+      img.profile-image(src='#{identity.profileData && identity.profileData.picture}')
+    td #{identity.profileData && identity.profileData.name}
+    td #{identity.profileData && identity.profileData.email}
+      if (identity.profileData && identity.profileData.email && identity.profileData.email_verified)
+        p (verified)
+      else if (identity.profileData && identity.profileData.email)
+        p (pending)
+    td
+      button.btn.btn-danger.btn-xs.unlink(onclick='unlinkAccount("#{identity.provider}","#{identity.user_id}")') unlink 
+
+mixin description(label,val)
+  dt #{label}
+  dd #{val}
+
+block content
+  if (suggestedUsers.length > 0)
+    .panel.panel-warning
+      .panel-heading Hey! We noticed there are other registered users with the same e-mail address. Do you want to link the accounts?
+        button.close &times;
+      .panel-body
+        table.table
+          thead
+            tr
+              th provider
+              th picture
+              th name
+              th nickname
+              th user_metadata
+              th app_metadata
+              th actions
+          tbody
+          each user in suggestedUsers
+            +suggestedUserMixin(user)
+    
+  .panel.panel-default
+    .panel-heading Root Profile 
+    .panel-body
+      dl.dl-horizontal
+        +description('email',user.email)
+        +description('email_verified',user.email_verified)
+        +description('name',user.name)
+        +description('given_name',user.given_name)
+        +description('family_name',user.family_name)
+        +description('picture',user.picture)
+        +description('locale',user.locale)
+        +description('user_id',user.user_id)
+        +description('nickname',user.nickname)
+        +description('user_metadata',JSON.stringify(user.user_metadata,null,4))
+        +description('app_metadata',JSON.stringify(user.app_metadata,null,4))
+  
+  .panel.panel-default
+      .panel-heading Linked Accounts
+      if (user.identities.length > 1)
+        table.table.identities
+          thead
+            tr
+              th provider
+              th picture
+              th name
+              th email
+              th actions
+          tbody
+          each identity in user.identities
+            +identityMixin(identity)
+      else
+        .panel-body
+          p You don't have any accounts linked.
+
+    .modal#alert-login-again
+      .modal-dialog.modal-sm
+          .modal-content.alert.alert-success
+            .modal-body 
+              h5 You have successfully unlinked the account! 
+              p We suggest you login again to see the changes reflected in your account.
+            .modal-footer
+              button.btn.btn-primary.login-again(onclick='loginAgain()') Login
+              button.btn.btn-default.login-again(onclick='$("#alert-login-again").hide()') Later
+
+  script.
+    var auth0Domain = '#{env.AUTH0_DOMAIN}';
+    var rootUserId = '#{user.user_id}';
+    var user = !{JSON.stringify(user)};
+    console.log('user',user);
+    
+    var suggestedUsers = !{JSON.stringify(suggestedUsers)};
+    console.log('suggestedUsers',suggestedUsers);
+    
+    function linkAccount(userId) {
+      $.ajax({
+        type: 'POST',
+        url: `/user/link-accounts/${userId}`,
+      }).then(function(data){
+        $('#alert-login-again').show();
+      }).fail(function(err){
+        alert('error'+err);
+      }).then(function(result){
+        alert('linked! ' + result);
+      }).fail(function(err){
+        alert('err ' + err);
+      });
+    }
+
+    function unlinkAccount(provider,userId){
+      var data={
+        access_token: accessToken,
+        user_id: provider+'|'+userId
+      };
+      $.ajax({
+        type: 'POST',
+        url: `https://${auth0Domain}/unlink`,
+        data: data
+      }).then(function(data){
+        $('#alert-login-again').show();
+      }).fail(function(err){
+        alert('error'+err);
+      });
+    }
+
