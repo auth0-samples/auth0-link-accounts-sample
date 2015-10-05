@@ -1,15 +1,29 @@
-# auth0-link-accounts-sample
+# Auth0 jQuery Link Accounts Sample
 
-Exampled of how to manage linked accounts.
+This sample application shows how to link and unlink accounts from client side within a SPA.
 
 ## Key Features
 
 The Linking Accounts sample SPA includes:
 
-* [Client side Account Linking within a Single Page Application](/SPA)
-* [Server side Account Linking within a Regular Web Application](/RegularWebApp)
+* Login with any of the available connections, using Lock
+* Display of current profile and already linked accounts
+* Option to unlink an account
+* Option to link another account
+* Option to link another account with a specific connection (i.e. facebook, twitter, etc)
+* Option to link to passwordless accounts
 
 You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
+
+## Install locally
+
+1. Create an auth0-variables.js file with your Auth0 credentials. You can use auth0-variables.sample.js as a template. You can get the clientId and domain from the [Auth0 Dashboard](https://manage.auth0.com).
+2. In your App's configuration on the [Auth0 Dashboard](https://manage.auth0.com), add `http://localhost:3000` to the list of **Allowed Callback URLs**. 
+3. Initialize a web server in the samples folder. You can do it for instance with `serve`:
+	* Install node
+	* run `npm install -g serve`
+	* run `serve` in the project's folder to start a server
+4. Go to the [index page](http://localhost:3000) and start playing with the app! 
 
 ## What is Auth0?
 

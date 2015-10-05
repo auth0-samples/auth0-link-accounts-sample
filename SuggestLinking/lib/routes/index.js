@@ -16,10 +16,6 @@ router.get('/', (req, res) => {
   res.render('index', { title: 'Account Linking Sample', env: env });
 });
 
-router.get('/login', (req, res) => {
-    res.render('login', { env: env });
-});
-
 router.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');

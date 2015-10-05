@@ -1,29 +1,29 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var session = require('express-session');
-var dotenv = require('dotenv')
-var passport = require('passport');
-var Auth0Strategy = require('passport-auth0');
+'use strict';
 
+const dotenv = require('dotenv');
 dotenv.load();
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const passport = require('passport');
+const Auth0Strategy = require('passport-auth0');
+const routes = require( './routes/index');
+const user = require('./routes/user');
 
-var routes = require('./routes/index');
-var user = require('./routes/user');
 
 // This will configure Passport to use Auth0
-var strategy = new Auth0Strategy({
+let strategy = new Auth0Strategy({
     domain:       process.env.AUTH0_DOMAIN,
     clientID:     process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL:  process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback',
-    passReqToCallback: true //this is needed for having the req available in the callback and gain access to the session
+    callbackURL:  process.env.AUTH0_CALLBACK_URL,
+    passReqToCallback: true,//this is needed for having the req available in the callback and gain access to the session
   }, function(req, accessToken, refreshToken, extraParams, profile, done) {
-    console.log("--------------------------------------------");
-    console.log("profile",profile);
+    console.log('profile',profile);
     // accessToken is the token to call Auth0 API. We will need it to link accounts
     req.session.accessToken = accessToken;
     // extraParams.id_token has the JSON Web Token
@@ -49,7 +49,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -78,7 +78,7 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
+  app.use((err, req, res) => {
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
@@ -89,7 +89,7 @@ if (app.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
+app.use((err, req, res) => {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,

@@ -1,15 +1,28 @@
-# auth0-link-accounts-sample
-
-Exampled of how to manage linked accounts.
+# auth0-link-accounts-sample/SuggestLinking
 
 ## Key Features
 
-The Linking Accounts sample SPA includes:
+In this scenario a user may have logged in to the app with an account and save some preferences. Then he logins with another account and have some other data associated with that. The app checks if there are associated accounts created on login, and suggest to link the accounts. The app and/or the user has the possibility of merging the associated data before linking.
 
-* [Client side Account Linking within a Single Page Application](/SPA)
-* [Server side Account Linking within a Regular Web Application](/RegularWebApp)
+1. Install Node.js v4.0.0 or later
+2. Generate an APIv2 token with `read:users` and `update:users` scopes.
+3. Add a .env file containing your credentials. You can use sample.env as template.
+4. In your App's configuration on the [Auth0 Dashboard](https://manage.auth0.com), add `http://localhost:3000/callback` to the list of **Allowed Callback URLs**. 
+5. Run:
+	```
+	npm install 
+	npm run start
+	```
+6. Go to http://localhost:3000 and you'll see the app running :).
 
-You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
+## Usage
+
+* Go to http://localhost:3000 and press the login button. Login with any provider and account.
+* In order to see the suggestion to link to other accounts with same verified email, you need to have another user associated with the app. If you don't see it, you can logout and login again with another account with same (verified) email.
+* You will see a modal suggesting you to link the accounts that have same verified email addresses. 
+* Click the button to link the accounts.
+
+|Notice that at this point you have all the user information before linking. So you can save or merge the user_metadata and app_metadata. Otherwise, it will be lost after linking.
 
 ## What is Auth0?
 

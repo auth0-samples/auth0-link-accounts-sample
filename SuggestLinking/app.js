@@ -30,17 +30,8 @@ let strategy = new Auth0Strategy({
     // accessToken is the token to call Auth0 API. We will need it to link accounts
     req.session.accessToken = accessToken;
 
-    //look for users with same email
-    Auth0Client.getUsersWithSameVerifiedEmail(profile._json)
-      .then(identities => {
-        req.session.suggestedUsers = identities;
-      }).catch( err => {
-        console.log('There was an error retrieving users with the same verified email to suggest linking',err);
-      }).then(() => {
-        return done(null, profile);
-      });
-
-  });
+    done(null,profile);
+});
 
 
 passport.use(strategy);
