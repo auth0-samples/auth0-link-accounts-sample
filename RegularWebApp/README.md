@@ -14,6 +14,10 @@ You can read more about Account Linking on our [Doc's Site](https://auth0.com/do
 * Option to link another account
 * Option to link to a passwordless account
 
+![](https://raw.githubusercontent.com/auth0/auth0-link-accounts-sample/master/RegularWebApp/regular-web-app-suggest-linking.png)
+
+![](https://raw.githubusercontent.com/auth0/auth0-link-accounts-sample/master/RegularWebApp/regular-web-app-user-settings.png)
+
 ## Install Locally
 
 1. Install Node.js v4.0.0 or later

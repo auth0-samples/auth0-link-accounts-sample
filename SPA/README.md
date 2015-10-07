@@ -6,7 +6,7 @@ You can read more about Account Linking on our [Doc's Site](https://auth0.com/do
 
 ## Key Features
 
-The Linking Accounts sample SPA includes:
+The SPA Linking Accounts sample includes:
 
 * Login with any available connection using **Lock**
 * Login with any passwordless connections, using **Lock Passwordless**
@@ -15,6 +15,9 @@ The Linking Accounts sample SPA includes:
 * Option to link another account
 * Option to link another account with a specific connection (i.e. facebook, twitter, etc)
 * Option to link to a passwordless account
+
+
+![](https://raw.githubusercontent.com/auth0/auth0-link-accounts-sample/master/SPA/spa-user-settings.png)
 
 ## Install Locally
 

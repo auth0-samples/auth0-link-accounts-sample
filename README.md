@@ -6,7 +6,7 @@ You can read more about Account Linking on our [Doc's Site](https://auth0.com/do
 
 ## Key Features
 
-The Linking Accounts sample SPA includes:
+The Linking Accounts samples includes:
 
 * [Client side Account Linking within a Single Page Application](/SPA)
 * [Server side Account Linking within a Regular Web Application](/RegularWebApp)
