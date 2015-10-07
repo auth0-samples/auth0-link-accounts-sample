@@ -29,7 +29,7 @@ function loginPasswordlessSMS(){
 }
 
 /*
-* App login using a one time code via Email
+* App using a one time code via Email
 */
 function loginPasswordlessEmailCode(){
   // Initialize Passwordless Lock instance
@@ -78,7 +78,8 @@ function linkPasswordAccount(connection){
   if (connection){
     opts.connections = [connection];
   }
-  lock.showSignin(opts)
+  //open lock in signin mode, with the customized options for linking
+  lock.showSignin(opts);
 }
 
 /*
@@ -150,11 +151,13 @@ function reloadProfile(){
     }
   });
 }
+
 /*
-*
+* Link account
 */
 function linkAccount(target_jwt){
-  var user_id = localStorage.getItem('user_id');
+  // At this point you could fetch user_metadata for merging with the root account
+  // otherwise it will be lost after linking the accountsvar user_id = localStorage.getItem('user_id');
   var id_token = localStorage.getItem('id_token');
   $.ajax({
     type: 'POST',
@@ -172,6 +175,7 @@ function linkAccount(target_jwt){
     alert('Error linking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
   });
 }
+
 /*
 * Unlink account
 */
