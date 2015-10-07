@@ -1,23 +1,20 @@
 # Auth0 jQuery Single Page App Account Linking Sample
 
-This sample application shows how to link and unlink accounts from client side code within a Single Page Application.
-
-You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
+This sample application shows how to [link and unlink accounts from client side code](https://auth0.com/docs/link-accounts/client-side) within a Single Page Application.
 
 ## Key Features
 
 The SPA Linking Accounts sample includes:
 
-* Login with any available connection using **Lock**
-* Login with any passwordless connections, using **Lock Passwordless**
+* Login with any available connection using [Lock](https://github.com/auth0/lock)
+* Login with any passwordless connections, using [Lock Passwordless](https://github.com/auth0/lock-passwordless)
 * Display of current profile and already linked accounts
-* Option to **unlink** an account
+* Option to unlink an account
 * Option to link another account
 * Option to link another account with a specific connection (i.e. facebook, twitter, etc)
 * Option to link to a passwordless account
 
-
-![](https://raw.githubusercontent.com/auth0/auth0-link-accounts-sample/master/SPA/spa-user-settings.png)
+![](spa-user-settings.png)
 
 ## Install Locally
 
@@ -28,31 +25,3 @@ The SPA Linking Accounts sample includes:
 	* run `npm install -g serve`
 	* run `serve` in the project's folder to start a server
 4. Go to the [index page](http://localhost:3000) and start playing with the app! 
-
-## What is Auth0?
-
-Auth0 helps you to:
-
-* Add authentication with [multiple authentication sources](https://docs.auth0.com/identityproviders), either social like **Google, Facebook, Microsoft Account, LinkedIn, GitHub, Twitter, Box, Salesforce, amont others**, or enterprise identity systems like **Windows Azure AD, Google Apps, Active Directory, ADFS or any SAML Identity Provider**.
-* Add authentication through more traditional **[username/password databases](https://docs.auth0.com/mysql-connection-tutorial)**.
-* Add support for **[linking different user accounts](https://docs.auth0.com/link-accounts)** with the same user.
-* Support for generating signed [Json Web Tokens](https://docs.auth0.com/jwt) to call your APIs and **flow the user identity** securely.
-* Analytics of how, when and where users are logging in.
-* Pull data from other sources and add it to the user profile, through [JavaScript rules](https://docs.auth0.com/rules).
-
-## Create a free Auth0 Account
-
-1. Go to [Auth0](https://auth0.com) and click Sign Up.
-2. Use Google, GitHub or Microsoft Account to login.
-
-## Issue Reporting
-
-If you have found a bug or if you have a feature request, please report them at this repository issues section. Please do not report security vulnerabilities on the public GitHub issue tracker. The [Responsible Disclosure Program](https://auth0.com/whitehat) details the procedure for disclosing security issues.
-
-## Author
-
-[Auth0](auth0.com)
-
-## License
-
-This project is licensed under the MIT license. See the [LICENSE](LICENSE) file for more info.
