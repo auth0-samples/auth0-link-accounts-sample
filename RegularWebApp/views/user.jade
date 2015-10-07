@@ -1,16 +1,33 @@
 extends user-layout
 
+mixin suggestedUserMixin(identity)
+  tr(data-id='#{identity.user_id}')
+    td #{identity.user_id}
+    td #{identity.provider || identity.user_id.split('|')[0]}
+    td 
+      if (identity.picture)
+        img.profile-image(src='#{identity.picture}')
+    td #{identity.name}
+    td #{identity.nickname}
+    td #{identity.user_metadata}
+    td #{identity.app_metadata}  
+    td
+      button.btn.btn-success.btn-xs.unlink(onclick='linkAccount("#{identity.user_id}")') link 
+
 mixin identityMixin(identity)
   tr(data-id='#{identity.user_id}')
     td #{identity.provider}
+    td #{identity.user_id}
+    td #{identity.connection}
     td 
-      img.profile-image(src='#{identity.profileData && identity.profileData.picture}')
+      if (identity.profileData && identity.profileData.picture)
+        img.profile-image(src='#{identity.profileData && identity.profileData.picture}')
     td #{identity.profileData && identity.profileData.name}
-    td #{identity.profileData && identity.profileData.email}
+    td #{identity.profileData && identity.profileData.email}&nbsp;
       if (identity.profileData && identity.profileData.email && identity.profileData.email_verified)
-        p (verified)
+        span.label.label-success verified
       else if (identity.profileData && identity.profileData.email)
-        p (pending)
+        span.label.label-danger not verified
     td
       button.btn.btn-danger.btn-xs.unlink(onclick='unlinkAccount("#{identity.provider}","#{identity.user_id}")') unlink 
 
@@ -19,16 +36,21 @@ mixin description(label,val)
   dd #{val}
 
 block content
+  
   .panel.panel-default
-    .panel-heading Root Profile 
+    .panel-heading 
+      img.img-circle.profile-image(src='#{user.picture}') 
+      |Root Profile 
     .panel-body
       dl.dl-horizontal
-        +description('email',user.email)
-        +description('email_verified',user.email_verified)
+        dt email
+        dd #{user.email} &nbsp;
+          if (user.email_verified)
+            span.label.label-success verified
+          else
+            span.label.label-danger not verified
         +description('name',user.name)
-        +description('given_name',user.given_name)
-        +description('family_name',user.family_name)
-        +description('picture',user.picture)
+        +description('provider',provider)
         +description('locale',user.locale)
         +description('user_id',user.user_id)
         +description('nickname',user.nickname)
@@ -36,90 +58,169 @@ block content
         +description('app_metadata',JSON.stringify(user.app_metadata,null,4))
 
   .panel.panel-default
-    .panel-heading Linked Accounts
-    if (user.identities.length > 1)
-      table.table.identities
-        thead
-          tr
-            th provider
-            th picture
-            th name
-            th email
-            th actions
-        tbody
-        each identity in user.identities
-          +identityMixin(identity)
-    else
-      .panel-body
-        p You don't have any accounts linked.
-    .panel-footer
-      button.btn.btn-primary(onclick='linkAccount()') Link another account
+      .panel-heading Linked Accounts
+      if (user.identities.length > 1)
+        table.table.identities
+          thead
+            tr
+              th provider
+              th id
+              th connection
+              th(style='width:5%')
+              th name
+              th email
+              th actions
+          tbody
+          each identity in user.identities
+            if (identity.provider !== user.user_id.split('|')[0] && identity.user_id !== user.user_id.split('|')[1])
+              +identityMixin(identity)
+      else
+        .panel-body
+          p You don't have any accounts linked.
+      .panel-footer
+        button.btn.btn-primary(onclick='linkNewAccount()') Link another account
+        | &nbsp;&nbsp;
+        button.btn.btn-warning(onclick='linkPasswordlessSMS()') Link Passwordless SMS
+        | &nbsp;&nbsp;
+        button.btn.btn-warning(onclick='linkPasswordlessEmailCode()') Link Passwordless Email Code
 
-  .modal#alert-login-again
-    .modal-dialog.modal-sm
-        .modal-content.alert.alert-success
-          .modal-body 
-            h5 You have successfully unlinked the account! 
-            p We suggest you login again to see the changes reflected in your account.
-          .modal-footer
-            button.btn.btn-primary.login-again(onclick='loginAgain()') Login
-            button.btn.btn-default.login-again(onclick='$("#alert-login-again").hide()') Later
+  .modal#suggest-modal
+    .modal-dialog.modal-lg
+      .modal-content
+        .modal-header
+          button(type="button" class="close" data-dismiss="modal" aria-hidden="true") ×
+          h4 Link Accounts
+        .modal-body
+          p We noticed there are other registered users with same and verified e-mail address: <strong>#{user.email}</strong>. Do you want to link the accounts?
+          table.table.table-condensed
+            thead
+              tr
+                th user_id
+                th name
+                th user_metadata
+                th app_metadata
+                th actions
+            tbody#suggested-users
+        .modal-footer
+          button.btn.btn-default(type="button" data-dismiss="modal") No, thanks.
 
+block script
   script.
     var auth0Domain = '#{env.AUTH0_DOMAIN}';
-    var accessToken = '#{access_token}';
-    var callbackURL = '#{env.AUTH0_CALLBACK_URL}';
-    var clientId = '#{env.AUTH0_CLIENT_ID}';
     var rootUserId = '#{user.user_id}';
-    var rootUserProvider = '#{provider}';
+    var accessToken = '#{access_token}';
     var user = !{JSON.stringify(user)};
     console.log('user',user);
-    var rootUserConnection = $.grep( user.identities, function( identity ) {
-          return identity.user_id === (rootUserId.indexOf('|') > 0 ? rootUserId.split('|')[1] : rootUserId);
-      })[0].connection;
-    console.log('rootCOnnection',rootUserConnection);
+    var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
 
-    var lock = new Auth0Lock(clientId, auth0Domain);
 
-    function linkAccount() {
+    function linkNewAccount(){
+      //we show only signin option, don't remember last login and change login message
       lock.showSignin({
-        callbackURL: callbackURL,
-        rememberLastLogin: false,
+        rememberLastLogin:false,
         dict: {
           signin: {
             title: 'Link another account'
           }
-        },
-        responseType: 'code',
-        authParams: {
-          scope: 'openid profile',
-          access_token: accessToken
         }
       });
     }
 
-    //change to an app /unlink endpoint where I can get the profile again and save it to session
-    function unlinkAccount(provider,userId){
-      var data={
-        access_token: accessToken,
-        user_id: provider+'|'+userId
+    /*
+    * Link using Passwordless SMS connection
+    */
+    function linkPasswordlessSMS(){
+      // Initialize Passwordless Lock instance
+      var lock = new Auth0LockPasswordless( '#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}' );
+      var opts = { 
+        autoclose: true, 
+        rememberLastLogin: false,
+        dict:{
+          phone: {
+            headerText: "Enter your phone to sign in <br>or create an account to link to."
+          }
+        }
       };
-      $.ajax({
-        type: 'POST',
-        url: `https://${auth0Domain}/unlink`,
-        data: data
-      }).then(function(data){
-        $('#alert-login-again').show();
-      }).fail(function(err){
-        alert('error'+err);
+      // Open the lock in SMS mode with the ability to handle the authentication in page
+      lock.sms( opts , function (err, profile) {
+        if (!err){
+          // link account using user_id
+          linkAccount(profile.user_id);
+        }
       });
     }
 
-    function loginAgain(){
-      lock.$auth0.signin({
-        callbackURL: callbackURL,
-        scope: 'openid profile',
-        connection: rootUserConnection
+    /*
+    * Link using Passwordless Email connection
+    */
+    function linkPasswordlessEmailCode(){
+      // Initialize Passwordless Lock instance
+      var lock = new Auth0LockPasswordless( '#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}' );
+      var opts = { 
+        autoclose: true, 
+        rememberLastLogin: false,
+        dict:{
+          email: {
+            headerText: "Enter your email to sign in or sign up to the account to link to."
+          }
+        }
+      };
+      // Open the lock in Email Code mode with the ability to handle the authentication in page
+      lock.emailcode( opts , function (err, profile) {
+        if (!err){
+          // link account using user_id
+          linkAccount(profile.user_id);
+        }
+      });
+    }
+        
+    function linkAccount(targetUserId) {
+      $.ajax({
+        type: 'POST',
+        url: '/user/link-accounts/' + targetUserId,
+      }).then(function(){
+        alert('linked!!');
+        location.reload();
+      }).fail(function(jqXHR){
+        alert('Error linking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
+      });
+    }
+
+    function unlinkAccount(provider,userId){
+      $.ajax({
+        type: 'POST',
+        url: '/user/unlink-accounts/' + provider + '|' + userId,
+      }).then(function(){
+        alert('unlinked!!');
+        location.reload();
+      }).fail(function(jqXHR){
+        alert('Error unlinking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
+      });
+    }
+
+    function getSuggestedUsers(){
+      $.ajax({
+        url: '/user/suggested-users'
+      }).then(function(identities){
+        if (identities.length > 0){
+
+          $('#suggested-users tr').remove();
+
+          $.each(identities,function(index,identity){
+            $('#suggested-users').append(
+              `<tr>
+                <td>${identity.user_id}</td>
+                <td>${identity.name}</td>
+                <td>${JSON.stringify(identity.user_metadata,null,2)}</td>
+                <td>${JSON.stringify(identity.app_metadata,null,2)}</td>
+                <td><button onclick="linkAccount('${identity.user_id}')" class="btn btn-success">Link</button></td>
+              </tr>`);
+          });
+
+          $('#suggest-modal').modal();
+        }
+      }).fail(function(jqXHR){
+        alert('Error getting suggested users: ' + jqXHR.status + " " + jqXHR.responseText);
       });
     }
 
@@ -128,13 +229,22 @@ block content
     }
 
     $(document).ready(function() {
-      $.each(user.identities,function(index,identity){
-        if (isRootIdentity(identity)){
-          //$(`table.identities tr[data-id='${identity.user_id}'] button.unlink`).hide();
-          $(`table.identities tr[data-id='${identity.user_id}']`).hide();
+
+      //request suggested accounts to link to
+      if (user.email_verified){
+        getSuggestedUsers();
+      }
+
+      //handle redirection from iDP after login to a new account for linking
+      var hash = lock.parseHash();
+      if (hash) {
+        window.location.hash = ''; //clean hash
+        console.log('hash',hash);
+        if (hash.error) {
+          alert('There was an error logging in ' + hash.error );
+        } else {
+          //call to link accounts using the newly authenticated user's id
+          linkAccount(hash.profile.sub);
         }
-      });
-      
+      }
     });
-
-

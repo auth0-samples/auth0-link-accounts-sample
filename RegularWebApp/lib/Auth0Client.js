@@ -55,6 +55,24 @@ class Auth0Client {
 		});
 	}
 
+	/*
+	* Links Accounts
+	* Links targetUserId account to rootUserId account  
+	*
+	* Example:
+	*
+	*  Auth0Client.linkAccounts('google-oauth2%7C115015401343387192604','sms|560ebaeef609ee1adaa7c551')
+	*  .then( identities => {
+  *    // use new user's array of identities
+  *  })
+  *  .catch( err => {
+  *    // handle error
+  *  });
+	*  
+	* @param {String} rootUserId
+  * @param {String} targetUserId
+  * @api public
+	*/
 	linkAccounts(rootUserId,targetUserId) {
 
 		const provider = targetUserId.split('|')[0];
@@ -72,8 +90,7 @@ class Auth0Client {
 		      user_id
 		    }
 		  };
-		  console.log('reqOpts',reqOpts);
-			request(reqOpts,(error, response, body) => {
+		  request(reqOpts,(error, response, body) => {
 				if (error) {
 					return reject(error);
 				} else if (response.statusCode !== 201) {
@@ -85,6 +102,24 @@ class Auth0Client {
 		});
 	}
 
+	/*
+	* Unlinks Accounts
+	* Unlinks targetUserId account from rootUserId account  
+	*
+	* Example:
+	*
+	*  Auth0Client.unlinkAccounts('google-oauth2%7C115015401343387192604','sms|560ebaeef609ee1adaa7c551')
+	*  .then( identities => {
+  *    // use new user's array of identities
+  *  })
+  *  .catch( err => {
+  *    // handle error
+  *  });
+	*  
+	* @param {String} rootUserId
+  * @param {String} targetUserId
+  * @api public
+	*/
 	unlinkAccounts(rootUserId,targetUserId){
 		const provider = targetUserId.split('|')[0];
 		const user_id = targetUserId.split('|')[1];
@@ -109,7 +144,6 @@ class Auth0Client {
 			});
 		});
 	}
-
 }
 
 module.exports = new Auth0Client();

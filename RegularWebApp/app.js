@@ -11,9 +11,9 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
-const routes = require( './routes/index');
-const user = require('./routes/user');
-
+const Auth0Client = require('./lib/Auth0Client');
+const routes = require( './lib/routes/index');
+const user = require('./lib/routes/user');
 
 // This will configure Passport to use Auth0
 let strategy = new Auth0Strategy({
@@ -21,15 +21,18 @@ let strategy = new Auth0Strategy({
     clientID:     process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
     callbackURL:  process.env.AUTH0_CALLBACK_URL,
-    passReqToCallback: true,//this is needed for having the req available in the callback and gain access to the session
+    //passReqToCallback is needed for having the req available in the callback to gain access to the session
+    passReqToCallback: true 
   }, function(req, accessToken, refreshToken, extraParams, profile, done) {
+    
     console.log('profile',profile);
+
     // accessToken is the token to call Auth0 API. We will need it to link accounts
     req.session.accessToken = accessToken;
-    // extraParams.id_token has the JSON Web Token
-    // profile has all the information from the user
-    return done(null, profile);
-  });
+
+    done(null,profile);
+});
+
 
 passport.use(strategy);
 
@@ -42,13 +45,12 @@ passport.deserializeUser(function(user, done) {
   done(null, user);
 });
 
-var app = express();
+let app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -68,7 +70,7 @@ app.use('/user', user);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+  let err = new Error('Not Found');
   err.status = 404;
   next(err);
 });

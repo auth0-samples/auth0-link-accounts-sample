@@ -1,37 +1,40 @@
-# auth0-link-accounts-sample/RegularWebApp
-Example of how to manage linked accounts from a regular Node.js web application.
+# Auth0 Node.js Regular Web App Account Linking Sample
 
-In this case the user logins to the App using any of the available identity providers. He then has the option inside the app, to link the account with other accounts. This can be useful in case of a user that first registered with username & password, but then wants to use a social login instead to don't have to remember the password.
-Another use case, is when the app wants to interact with several social APIs, like posting a message to Twitter & Facebook at the same time.
+This sample shows how to link/unlink accounts from server side code within a Node.js Regular Web App.
+
+You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
+
+## Key Features
+
+* Login with any available connection using **Lock**
+* Login with any passwordless connections, using **Lock Passwordless**
+* Notice of existance of other accounts with same verified email address to link to
+* Display of current profile and already linked accounts
+* Option to **unlink** an account
+* Option to link another account
+* Option to link to a passwordless account
 
 ## Install Locally
 
-In order to run the example locally you would need to:
-
-* Clone the auth0-link-accounts-sample repository
-* Install Node.js v4.0.0 or later
-* Add a .env file containing your credentials. You can use sample.env as template.
-* On the RegularWebApp dir, run:
-
+1. Install Node.js v4.0.0 or later
+2. Generate an APIv2 token with `read:users` and `update:users` scopes.
+3. Add a .env file containing your credentials. You can use sample.env as template.
+4. In your App's configuration on the [Auth0 Dashboard](https://manage.auth0.com), add `http://localhost:3000/callback` and `http://localhost:3000/user` to the list of **Allowed Callback URLs**. 
+5. Run:
 	```
 	npm install 
 	npm run start
 	```
-
-* Go to http://localhost:3000 and you'll see the app running :).
+6. Go to http://localhost:3000 and you'll see the app running :).
 
 ## Usage
 
-* Go to http://localhost:3000 and press the login button. 
-* Login with any provider and account.
-* You will see your profile details, any other accounts already linked and a button to link a new account
-* Press the button to link a new account. You will be prompted to login with the new account.
-* After linking the account your profile will be updated with the new identity on the linked accounts list. Notice that the primary user_id and all main profile properties are referring to the first identity the user authenticated with.
-
-### Case of linking an existant user
-
-* Make sure you have two (unlinked) users related to the app, each one with its one app_metadata and user_metadata. You can see them in the Auth0 Dashboard.
-* Login to the RegularWebApp sample and link the other account. Notice how the app_metadata and user_metadata of the linked account is lost, and only the metadata from the main profile is conserved. Even if you unlink the accounts, the app_metadata and user_metadata of the second user is lost.
+* Go to http://localhost:3000 and press any of the login buttons to log in to the App.
+* In order to see the suggestion to link to other accounts with same verified email, you need to have another user associated with the app. If you don't see it, you can logout and login again with another account with same (verified) email.
+* You will see a modal suggesting you to link the accounts that have same verified email addresses. 
+* Click the button to link the accounts.
+* You can also click on any of the link accounts buttons to manually initiate an account linking
+* Try unlinking accounts, too.
 
 ## What is Auth0?
 

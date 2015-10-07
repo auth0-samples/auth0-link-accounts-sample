@@ -1,23 +1,50 @@
 extends layout
 
 block content
-  script(src="https://cdn.auth0.com/js/lock-7.5.js")
   
   h1= title
   p Welcome to #{title}
   br
-  button.btn.btn-primary(onclick="signin()") Login
+  if (user)
+    p See your 
+     a(url='/user') profile
+  else
+    button.btn.btn-primary(onclick="signin()") Login
+    br
+    br
+    button.btn.btn-warning(onclick='loginSMS()') Login with a one time code via sms
+    br
+    br
+    button.btn.btn-warning(onclick='loginEmailCode()') Login with a one time code via email
+    br
+    br
+    button.btn.btn-warning(onclick='loginEmailLink()') Login with a magic link via email
 
+block script
   script.
-    var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
-    function signin() {
+    
+    function signin() {    
+      var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
       lock.show({
           callbackURL: '#{env.AUTH0_CALLBACK_URL}'
         , responseType: 'code'
         , authParams: {
-          scope: 'openid profile'
+          scope: 'openid'
         }
       });
     }
 
-  
+    function loginSMS() {
+      var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
+      lock.sms( {callbackURL: '#{env.AUTH0_CALLBACK_URL}'} );
+    }
+
+    function loginEmailCode() {
+      var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
+      lock.emailcode( {callbackURL: '#{env.AUTH0_CALLBACK_URL}'} );
+    }
+
+    function loginEmailLink() {
+      var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
+      lock.magiclink( {callbackURL: '#{env.AUTH0_CALLBACK_URL}'} );
+    }

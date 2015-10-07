@@ -12,16 +12,49 @@ function login(){
 }
 
 /*
+* App login using a one time code via SMS
+*/
+function loginPasswordlessSMS(){
+  // Initialize Passwordless Lock instance
+  var lock = new Auth0LockPasswordless( AUTH0_CLIENT_ID, AUTH0_DOMAIN );
+
+  // Open the lock in SMS mode with the ability to handle the authentication in page
+  lock.sms( { autoclose: true } ,function (err, profile, id_token) {
+    if (!err){
+      localStorage.setItem('id_token', id_token);
+      localStorage.setItem('user_id', profile.user_id);
+      showLoggedInUser(profile);
+    }
+  });
+}
+
+/*
+* App login using a one time code via Email
+*/
+function loginPasswordlessEmailCode(){
+  // Initialize Passwordless Lock instance
+  var lock = new Auth0LockPasswordless( AUTH0_CLIENT_ID , AUTH0_DOMAIN );
+
+  // Open the lock in SMS mode with the ability to handle the authentication in page
+  lock.emailcode( {autoclose: true} ,function (err, profile, id_token) {
+    if (!err){
+      localStorage.setItem('id_token', id_token);
+      localStorage.setItem('user_id', profile.user_id);
+      showLoggedInUser(profile);
+    }
+  });
+}
+
+/*
 * Logout user
 */
 function logout(){
   $.ajax({
     type: 'GET',
-    url: `https://${AUTH0_DOMAIN}/v2/logout`
+    url: 'https://' + AUTH0_DOMAIN + '/v2/logout'
   }).then(function(data){
-    localStorage.removeItem("id_token");
-    localStorage.removeItem("profile");
-    localStorage.removeItem("access_token");
+    localStorage.removeItem('id_token');
+    localStorage.removeItem('user_id');
     $('.login-box').show();
     $('.logged-in-box').hide(); 
   }).fail(function(err){
@@ -33,30 +66,19 @@ function logout(){
 /*
 * Link Accounts.
 */
-function linkAccount(connection){
+function linkPasswordAccount(connection){
   var opts = {
     rememberLastLogin: false,
     dict: {
       signin: {
         title: 'Link another account'
       }
-    },
-    authParams: {
-      access_token: localStorage.getItem('access_token')
     }
   };
   if (connection){
     opts.connections = [connection];
   }
-  lock.showSignin(opts,function(err,profile){
-    if (err){
-      alert('Error linking account! ' + err );
-      console.log('Error linking account',err,err.stack);
-      return;
-    }
-    console.log('profile',profile);
-    showLoggedInUser(profile);
-  });
+  lock.showSignin(opts)
 }
 
 /*
@@ -66,12 +88,19 @@ function linkPasswordlessSMS(){
   // Initialize Passwordless Lock instance
   var lock = new Auth0LockPasswordless( AUTH0_CLIENT_ID, AUTH0_DOMAIN );
 
+  var opts = { 
+    autoclose: true, 
+    rememberLastLogin: false,
+    dict:{
+      phone: {
+        headerText: "Enter your phone to sign in <br>or create an account to link to."
+      }
+    }
+  };
   // Open the lock in SMS mode with the ability to handle the authentication in page
-  lock.sms(function (err, profile, id_token) {
+  lock.sms( opts, function (err, profile, id_token) {
     if (!err){
-      // Save the JWT token.
-      console.log('sms profile', profile);
-      console.log('sms id_token', id_token);
+      linkAccount(id_token);
     }
   });
 }
@@ -82,13 +111,20 @@ function linkPasswordlessSMS(){
 function linkPasswordlessEmailCode(){
   // Initialize Passwordless Lock instance
   var lock = new Auth0LockPasswordless( AUTH0_CLIENT_ID, AUTH0_DOMAIN );
-
+  var opts = { 
+    autoclose: true, 
+    rememberLastLogin: false,
+    dict:{
+      email: {
+        headerText: "Enter your email to sign in or sign up to the account to link to."
+      }
+    }
+  };
   // Open the lock in Email Code mode with the ability to handle
   // the authentication in page
-  lock.emailcode( function(err, profile, id_token) {
+  lock.emailcode( opts, function(err, profile, id_token) {
     if (!err) {
-      console.log('email profile',profile);
-      console.log('email id_token',id_token);
+      linkAccount(id_token);
     }
   });
 }
@@ -105,23 +141,54 @@ function linkPasswordlessEmailLink(){
   lock.magiclink();
 }
 
+function reloadProfile(){
+  lock.getProfile(localStorage.getItem('id_token'), function(err, profile) {
+    if (err) {
+      alert('There was an error getting profile. ' + err);
+    } else {
+      showLoggedInUser(profile);
+    }
+  });
+}
+/*
+*
+*/
+function linkAccount(target_jwt){
+  var user_id = localStorage.getItem('user_id');
+  var id_token = localStorage.getItem('id_token');
+  $.ajax({
+    type: 'POST',
+    url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + user_id + '/identities',
+    data: {
+      link_with: target_jwt
+    },
+    headers: {
+      'Authorization': 'Bearer ' + id_token
+    }
+  }).then(function(identities){
+    alert('linked!');
+    showLinkedAccounts(identities);
+  }).fail(function(jqXHR){
+    alert('Error linking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
+  });
+}
 /*
 * Unlink account
 */
 function unlinkAccount(provider,userId){
-  var accessToken = localStorage.getItem("access_token");
-  var data={
-    access_token: accessToken,
-    user_id: provider+'|'+userId
-  };
+  var user_id = localStorage.getItem('user_id');
+  var id_token = localStorage.getItem('id_token');
   $.ajax({
-    type: 'POST',
-    url: `https://${AUTH0_DOMAIN}/unlink`,
-    data: data
-  }).then(function(data){
-    alert("unlinked! "+data);
-  }).fail(function(err){
-    alert('error: ' + err.error + " " + err.error_description);
+    type: 'DELETE',
+    url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + user_id + '/identities/' + provider + '/' + userId,
+    headers: {
+      'Authorization': 'Bearer ' + id_token
+    }
+  }).then(function(identities){
+    alert('unlinked!');
+    showLinkedAccounts(identities);
+  }).fail(function(jqXHR){
+    alert('Error unlinking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
   });
 }
 
@@ -134,26 +201,24 @@ function showLoggedInUser(profile){
   $('.nickname').text(profile.nickname);
   $('.profile').text(JSON.stringify(profile,null,2));
   $('.avatar').attr('src', profile.picture);
-  showLinkedAccounts(profile);
+  showLinkedAccounts(profile.identities);
 }
 
 /*
 * Returns true if the identity is the same of the root profile
 */
 function isRootIdentity(identity){
-  var profile = JSON.parse(localStorage.getItem('profile'));
-  return identity.provider === profile.user_id.split('|')[0] && identity.user_id === profile.user_id.split('|')[1];
+  var user_id = localStorage.getItem('user_id');
+  return identity.provider === user_id.split('|')[0] && identity.user_id === user_id.split('|')[1];
 }
 
 /*
 * Displays Linked Accounts as table rows in UI
 */
-function showLinkedAccounts(profile){
-  if (profile.identities.length > 1){
-
-    $('table.accounts tbody tr').remove();
-
-    $.each(profile.identities,function(index,identity){
+function showLinkedAccounts(identities){
+  $('table.accounts tbody tr').remove();
+  if (identities.length > 1){
+    $.each(identities,function(index,identity){
       if (!isRootIdentity(identity)){
         $('table.accounts tbody').append(
           `<tr>
@@ -166,38 +231,43 @@ function showLinkedAccounts(profile){
           </tr>`);
       }
     });
+  } else {
+    $('table.accounts tbody').append('<tr><td colspan="6">No linked accounts yet...</td></tr>');
   }
 }
 
 $(document).ready(function() {
-  //handle redirection from iDP after login
-  //TODO: handle the case of linking with magic link
+  var isUserLoggedIn = localStorage.getItem('id_token') !== null;
+  //handle case of already logged-in user
+  if (isUserLoggedIn) {
+    reloadProfile();
+  }
+
   var hash = lock.parseHash();
+  //handle redirection from iDP after login
   if (hash) {
     window.location.hash = ''; //clean hash
     console.log('hash',hash);
     if (hash.error) {
       alert('There was an error logging in ' + hash.error );
     } else {
-      lock.getProfile(hash.id_token, function(err, profile) {
-        if (err) {
-          alert('There was an error logging in. ' + err);
-        } else {
-          // Save the JWT token.
-          localStorage.setItem('id_token', hash.id_token);
-          localStorage.setItem('profile', JSON.stringify(profile));
-          localStorage.setItem('access_token', hash.access_token);
-          showLoggedInUser(profile);
-        }
-      });
+      // there is already a logged in user, the hash comes from a linking account operation, 
+      // and we should continue with the linking procedure
+      if (isUserLoggedIn){
+        linkAccount(hash.id_token);
+      } else {
+        // the hash comes from the site's first time login
+        lock.getProfile(hash.id_token, function(err, profile) {
+          if (err) {
+            alert('There was an error logging in. ' + err);
+          } else {
+            // Save the JWT token.
+            localStorage.setItem('id_token', hash.id_token);
+            localStorage.setItem('user_id', profile.user_id);
+            showLoggedInUser(profile);
+          }
+        });
+      }
     }
   }
-  //handle case of page refreshed with a user already logged-in
-  else {
-    var profile = localStorage.getItem('profile');
-    if (profile !== null){
-      showLoggedInUser(JSON.parse(profile));
-    }
-  }
-
 });

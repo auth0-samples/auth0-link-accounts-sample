@@ -1,6 +1,8 @@
-# auth0-link-accounts-sample
+# Auth0 Account Linking Sample
 
-Exampled of how to manage linked accounts.
+Example of how to manage linked accounts.
+
+You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
 
 ## Key Features
 
@@ -8,8 +10,6 @@ The Linking Accounts sample SPA includes:
 
 * [Client side Account Linking within a Single Page Application](/SPA)
 * [Server side Account Linking within a Regular Web Application](/RegularWebApp)
-
-You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
 
 ## What is Auth0?
 

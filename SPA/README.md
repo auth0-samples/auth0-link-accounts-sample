@@ -1,21 +1,22 @@
-# Auth0 jQuery Link Accounts Sample
+# Auth0 jQuery Single Page App Account Linking Sample
 
-This sample application shows how to link and unlink accounts from client side within a SPA.
+This sample application shows how to link and unlink accounts from client side code within a Single Page Application.
+
+You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
 
 ## Key Features
 
 The Linking Accounts sample SPA includes:
 
-* Login with any of the available connections, using Lock
+* Login with any available connection using **Lock**
+* Login with any passwordless connections, using **Lock Passwordless**
 * Display of current profile and already linked accounts
-* Option to unlink an account
+* Option to **unlink** an account
 * Option to link another account
 * Option to link another account with a specific connection (i.e. facebook, twitter, etc)
-* Option to link to passwordless accounts
+* Option to link to a passwordless account
 
-You can read more about Account Linking on our [Doc's Site](https://auth0.com/docs/link-accounts).
-
-## Install locally
+## Install Locally
 
 1. Create an auth0-variables.js file with your Auth0 credentials. You can use auth0-variables.sample.js as a template. You can get the clientId and domain from the [Auth0 Dashboard](https://manage.auth0.com).
 2. In your App's configuration on the [Auth0 Dashboard](https://manage.auth0.com), add `http://localhost:3000` to the list of **Allowed Callback URLs**. 

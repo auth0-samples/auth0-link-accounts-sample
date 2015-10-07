@@ -27,6 +27,8 @@
           <h3>Linking Accounts SPA Sample</h3>
           <p>Zero friction identity infrastructure, built for developers</p>
           <button onclick="login()" class="btn btn-primary btn-lg">SignIn</button>
+          <button onclick="loginPasswordlessSMS()" class="btn btn-primary btn-lg">One Time Code Login via SMS</button>          
+          <button onclick="loginPasswordlessEmailCode()" class="btn btn-primary btn-lg">One Time Code Login via Email</button>        
         </div>
       </div>
     </div>
@@ -78,26 +80,27 @@
               <tr><td colspan="6">No linked accounts yet...</td></tr>
             </tbody>
           </table>
-          <div class="panel-body">
+          <div class="panel-footer">
             <div class="row">
-            <div class="col-md-2">
-              <h5>Link Any</h5>
-              <button onclick="linkAccount()" class="btn btn-success"><i class="fa fa-link"></i> Link Account</button>
-            </div>
-            <div class="col-md-5">
-              <h5>Link Social</h5>
-              <div class="btn-group">
-                <button onclick="linkAccount('facebook')" class="text-left btn btn-primary"><i class="fa fa-facebook-square"></i> Facebook</button>
-                <button onclick="linkAccount('twitter')" class="text-left btn btn-primary"><i class="fa fa-twitter-square"></i> Twitter</button>
-                <button onclick="linkAccount('linkedin')" class="text-left btn btn-primary"><i class="fa fa-linkedin-square"></i> LinkedIn</button>
+              <div class="col-md-5">
+                <h5>Link Passwordless</h5>
+                <div class="btn-group">
+                  <button onclick="linkPasswordlessSMS()" class="btn btn-warning"><i class="fa fa-phone"></i> SMS</button>
+                  <button onclick="linkPasswordlessEmailCode()" class="btn btn-warning"><i class="fa fa-envelope"></i> Email  Code</button>  
+                  <button onclick="linkPasswordlessEmailLink()" class="btn btn-warning"><i class="fa fa-envelope"></i> Magic Link</button>
+                </div>
               </div>
-            </div>
-            <div class="col-md-5">
-              <h5>Link Passwordless</h5>
-              <div class="btn-group">
-                <button onclick="linkPasswordlessSMS()" class="btn btn-warning"><i class="fa fa-phone"></i> SMS</button>
-                <button onclick="linkPasswordlessEmailCode()" class="btn btn-warning"><i class="fa fa-envelope"></i> Email  Code</button>  
-                <button onclick="linkPasswordlessEmailLink()" class="btn btn-warning"><i class="fa fa-envelope"></i> Magic Link</button>
+              <div class="col-md-5">
+                <h5>Link Social</h5>
+                <div class="btn-group">
+                  <button onclick="linkAccount('facebook')" class="text-left btn btn-primary"><i class="fa fa-facebook-square"></i> Facebook</button>
+                  <button onclick="linkAccount('twitter')" class="text-left btn btn-primary"><i class="fa fa-twitter-square"></i> Twitter</button>
+                  <button onclick="linkAccount('linkedin')" class="text-left btn btn-primary"><i class="fa fa-linkedin-square"></i> LinkedIn</button>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <h5>Link Any</h5>
+                <button onclick="linkPasswordAccount()" class="btn btn-success"><i class="fa fa-link"></i> Link Account</button>
               </div>
             </div>
           </div>      
