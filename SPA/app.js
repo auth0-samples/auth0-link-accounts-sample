@@ -155,18 +155,19 @@ function reloadProfile(){
 /*
 * Link account
 */
-function linkAccount(target_jwt){
-  // At this point you could fetch user_metadata for merging with the root account
-  // otherwise it will be lost after linking the accountsvar user_id = localStorage.getItem('user_id');
-  var id_token = localStorage.getItem('id_token');
+function linkAccount(secondaryJWT){
+  // At this point you could fetch the secondary account's user_metadata for merging with the primary account.
+  // Otherwise, it will be lost after linking the accounts
+  var primaryJWT = localStorage.getItem('id_token');
+  var primaryUserId = localStorage.getItem('user_id');
   $.ajax({
     type: 'POST',
-    url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + user_id + '/identities',
+    url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + primaryUserId + '/identities',
     data: {
-      link_with: target_jwt
+      link_with: secondaryJWT
     },
     headers: {
-      'Authorization': 'Bearer ' + id_token
+      'Authorization': 'Bearer ' + primaryJWT
     }
   }).then(function(identities){
     alert('linked!');
@@ -179,20 +180,21 @@ function linkAccount(target_jwt){
 /*
 * Unlink account
 */
-function unlinkAccount(provider,userId){
-  var user_id = localStorage.getItem('user_id');
-  var id_token = localStorage.getItem('id_token');
+function unlinkAccount(secondaryProvider, secondaryUserId){
+  var primaryUserId = localStorage.getItem('user_id');
+  var primaryJWT = localStorage.getItem('id_token');
   $.ajax({
     type: 'DELETE',
-    url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + user_id + '/identities/' + provider + '/' + userId,
+    url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + primaryUserId +
+         '/identities/' + secondaryProvider + '/' + secondaryUserId,
     headers: {
-      'Authorization': 'Bearer ' + id_token
+      'Authorization': 'Bearer ' + primaryJWT
     }
   }).then(function(identities){
     alert('unlinked!');
     showLinkedAccounts(identities);
   }).fail(function(jqXHR){
-    alert('Error unlinking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
+    alert('Error unlinking Accounts: ' + jqXHR.status + ' ' + jqXHR.responseText);
   });
 }
 
@@ -258,7 +260,7 @@ $(document).ready(function() {
       // there is already a logged in user, the hash comes from a linking account operation, 
       // and we should continue with the linking procedure
       if (isUserLoggedIn){
-        linkAccount(hash.id_token);
+        linkAccount(hash.id_token, hash.profile.sub);
       } else {
         // the hash comes from the site's first time login
         lock.getProfile(hash.id_token, function(err, profile) {

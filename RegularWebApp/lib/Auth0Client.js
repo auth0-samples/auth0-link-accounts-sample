@@ -108,7 +108,7 @@ class Auth0Client {
 	*
 	* Example:
 	*
-	*  Auth0Client.unlinkAccounts('google-oauth2%7C115015401343387192604','sms|560ebaeef609ee1adaa7c551')
+	*  Auth0Client.unlinkAccounts('google-oauth2%7C115015401343387192604','sms','560ebaeef609ee1adaa7c551')
 	*  .then( identities => {
   *    // use new user's array of identities
   *  })
@@ -117,17 +117,15 @@ class Auth0Client {
   *  });
 	*  
 	* @param {String} rootUserId
+	* @param {String} targetUserProvider
   * @param {String} targetUserId
   * @api public
 	*/
-	unlinkAccounts(rootUserId,targetUserId){
-		const provider = targetUserId.split('|')[0];
-		const user_id = targetUserId.split('|')[1];
-
+	unlinkAccounts(rootUserId, targetUserProvider, targetUserId){
 		return new Promise((resolve,reject) => {
 			var reqOpts = {
 				method: 'DELETE',
-				url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${rootUserId}/identities/${provider}/${user_id}`,
+				url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${rootUserId}/identities/${targetUserProvider}/${targetUserId}`,
 				headers: {
 					'Authorization': `Bearer ${process.env.AUTH0_APIV2_TOKEN}`
 				}

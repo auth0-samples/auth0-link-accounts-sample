@@ -2,3 +2,10 @@
     width: 23px;
     margin-right: 10px;
 }
+pre.profile {
+  max-height: 250px;
+}
+td > pre {
+  max-width: 290px;
+  max-height: 100px;
+}

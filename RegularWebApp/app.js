@@ -11,7 +11,6 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
-const Auth0Client = require('./lib/Auth0Client');
 const routes = require( './lib/routes/index');
 const user = require('./lib/routes/user');
 
@@ -27,8 +26,8 @@ let strategy = new Auth0Strategy({
     
     console.log('profile',profile);
 
-    // accessToken is the token to call Auth0 API. We will need it to link accounts
-    req.session.accessToken = accessToken;
+    // save logged-in user's JWT for calling Auth0 API linking/unlinking endpoints
+    req.session.id_token = extraParams.id_token;
 
     done(null,profile);
 });

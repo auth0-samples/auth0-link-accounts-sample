@@ -2,6 +2,7 @@
 
 const express = require('express');
 const passport = require('passport');
+const handleCallbackError = require('./handleCallbackError')();
 
 const router = express.Router();
 
@@ -22,9 +23,8 @@ router.get('/logout', (req, res) => {
 });
 
 router.get('/callback',
-  //TODO: add middleware to check if the query string has an error message
-  //example: callback?error=invalid_connection&error_description=the%20connection%20was%20not%20found 302 1.537 ms - 68
-  passport.authenticate('auth0', { failureRedirect: '/login' }),
+  handleCallbackError,
+  passport.authenticate('auth0'),
   (req, res) => {
     res.redirect(req.session.returnTo || '/user');
   });

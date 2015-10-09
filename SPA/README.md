@@ -1,10 +1,8 @@
 # Auth0 jQuery Single Page App Account Linking Sample
 
-This sample application shows how to [link and unlink accounts from client side code](https://auth0.com/docs/link-accounts/client-side) within a Single Page Application.
+This Single Page App serves as an example of the [User Initiated Account Linking Scenario](https://auth0.com/docs/link-accounts/user-initiated), where the user can click on a **link account** button and login with other identity to link to. 
 
 ## Key Features
-
-The SPA Linking Accounts sample includes:
 
 * Login with any available connection using [Lock](https://github.com/auth0/lock)
 * Login with any passwordless connections, using [Lock Passwordless](https://github.com/auth0/lock-passwordless)

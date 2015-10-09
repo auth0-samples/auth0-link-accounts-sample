@@ -4,10 +4,10 @@ Sample implementations of [Auth0 Account Linking](https://auth0.com/docs/link-ac
 
 ## Key Features
 
-The Linking Account samples include:
+The Linking Account samples covers the following scenarios:
 
-* [Client side Account Linking within a Single Page Application](/SPA)
-* [Server side Account Linking within a Regular Web Application](/RegularWebApp)
+* [User Initiated Account Linking within a Single Page Application](/SPA)
+* [Suggested Account Linking within a Regular Web Application](/RegularWebApp)
 
 ## What is Auth0?
 

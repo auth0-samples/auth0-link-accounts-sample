@@ -22,12 +22,8 @@ mixin identityMixin(identity)
     td 
       if (identity.profileData && identity.profileData.picture)
         img.profile-image(src='#{identity.profileData && identity.profileData.picture}')
-    td #{identity.profileData && identity.profileData.name}
-    td #{identity.profileData && identity.profileData.email}&nbsp;
-      if (identity.profileData && identity.profileData.email && identity.profileData.email_verified)
-        span.label.label-success verified
-      else if (identity.profileData && identity.profileData.email)
-        span.label.label-danger not verified
+    td 
+      pre #{JSON.stringify(identity.profileData,null,2)}
     td
       button.btn.btn-danger.btn-xs.unlink(onclick='unlinkAccount("#{identity.provider}","#{identity.user_id}")') unlink 
 
@@ -49,13 +45,10 @@ block content
             span.label.label-success verified
           else
             span.label.label-danger not verified
-        +description('name',user.name)
-        +description('provider',provider)
-        +description('locale',user.locale)
-        +description('user_id',user.user_id)
-        +description('nickname',user.nickname)
-        +description('user_metadata',JSON.stringify(user.user_metadata,null,4))
-        +description('app_metadata',JSON.stringify(user.app_metadata,null,4))
+        dt raw profile
+        dd
+          pre.profile=JSON.stringify(user,null,2)
+
 
   .panel.panel-default
       .panel-heading Linked Accounts
@@ -67,8 +60,7 @@ block content
               th id
               th connection
               th(style='width:5%')
-              th name
-              th email
+              th profileData
               th actions
           tbody
           each identity in user.identities
@@ -77,12 +69,6 @@ block content
       else
         .panel-body
           p You don't have any accounts linked.
-      .panel-footer
-        button.btn.btn-primary(onclick='linkNewAccount()') Link another account
-        | &nbsp;&nbsp;
-        button.btn.btn-warning(onclick='linkPasswordlessSMS()') Link Passwordless SMS
-        | &nbsp;&nbsp;
-        button.btn.btn-warning(onclick='linkPasswordlessEmailCode()') Link Passwordless Email Code
 
   .modal#suggest-modal
     .modal-dialog.modal-lg
@@ -106,73 +92,8 @@ block content
 
 block script
   script.
-    var auth0Domain = '#{env.AUTH0_DOMAIN}';
-    var rootUserId = '#{user.user_id}';
-    var accessToken = '#{access_token}';
     var user = !{JSON.stringify(user)};
     console.log('user',user);
-    var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
-
-
-    function linkNewAccount(){
-      //we show only signin option, don't remember last login and change login message
-      lock.showSignin({
-        rememberLastLogin:false,
-        dict: {
-          signin: {
-            title: 'Link another account'
-          }
-        }
-      });
-    }
-
-    /*
-    * Link using Passwordless SMS connection
-    */
-    function linkPasswordlessSMS(){
-      // Initialize Passwordless Lock instance
-      var lock = new Auth0LockPasswordless( '#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}' );
-      var opts = { 
-        autoclose: true, 
-        rememberLastLogin: false,
-        dict:{
-          phone: {
-            headerText: "Enter your phone to sign in <br>or create an account to link to."
-          }
-        }
-      };
-      // Open the lock in SMS mode with the ability to handle the authentication in page
-      lock.sms( opts , function (err, profile) {
-        if (!err){
-          // link account using user_id
-          linkAccount(profile.user_id);
-        }
-      });
-    }
-
-    /*
-    * Link using Passwordless Email connection
-    */
-    function linkPasswordlessEmailCode(){
-      // Initialize Passwordless Lock instance
-      var lock = new Auth0LockPasswordless( '#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}' );
-      var opts = { 
-        autoclose: true, 
-        rememberLastLogin: false,
-        dict:{
-          email: {
-            headerText: "Enter your email to sign in or sign up to the account to link to."
-          }
-        }
-      };
-      // Open the lock in Email Code mode with the ability to handle the authentication in page
-      lock.emailcode( opts , function (err, profile) {
-        if (!err){
-          // link account using user_id
-          linkAccount(profile.user_id);
-        }
-      });
-    }
         
     function linkAccount(targetUserId) {
       $.ajax({
@@ -185,11 +106,11 @@ block script
         alert('Error linking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
       });
     }
-
+    
     function unlinkAccount(provider,userId){
       $.ajax({
         type: 'POST',
-        url: '/user/unlink-accounts/' + provider + '|' + userId,
+        url: '/user/unlink-accounts/' + provider + '/' + userId,
       }).then(function(){
         alert('unlinked!!');
         location.reload();
@@ -197,10 +118,11 @@ block script
         alert('Error unlinking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
       });
     }
-
+    
     function getSuggestedUsers(){
       $.ajax({
-        url: '/user/suggested-users'
+        url: '/user/suggested-users',
+        cache: false
       }).then(function(identities){
         if (identities.length > 0){
 
@@ -224,27 +146,9 @@ block script
       });
     }
 
-    function isRootIdentity(identity){
-      return identity.provider === rootUserId.split('|')[0] && identity.user_id === rootUserId.split('|')[1];
-    }
-
     $(document).ready(function() {
-
       //request suggested accounts to link to
       if (user.email_verified){
         getSuggestedUsers();
-      }
-
-      //handle redirection from iDP after login to a new account for linking
-      var hash = lock.parseHash();
-      if (hash) {
-        window.location.hash = ''; //clean hash
-        console.log('hash',hash);
-        if (hash.error) {
-          alert('There was an error logging in ' + hash.error );
-        } else {
-          //call to link accounts using the newly authenticated user's id
-          linkAccount(hash.profile.sub);
-        }
       }
     });
