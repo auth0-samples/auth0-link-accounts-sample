@@ -3,14 +3,37 @@
 const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn('/');
 const Auth0Client = require('../Auth0Client');
 const express = require('express');
-
 const router = express.Router();
+const _ = require('lodash');
 
-const env = {
-  AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
-  AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
-  AUTH0_CALLBACK_URL: process.env.AUTH0_CALLBACK_URL
-};
+const auth0 = require('auth0')({
+  token: process.env.AUTH0_APIV2_TOKEN
+});
+
+/*
+* Recursively merges user_metadata and app_metadata from secondary into primary user.
+* Data of primary user takes preponderance.
+* Array fields are joined.
+*/
+function _mergeMetadata(primaryUser, secondaryUser){
+  
+  const customizerCallback = function(objectValue, sourceValue){
+    if (_.isArray(objectValue)){
+      return sourceValue.concat(objectValue);
+    }
+  };
+  const mergedUserMetadata = _.merge({}, secondaryUser.user_metadata, primaryUser.user_metadata, customizerCallback);
+  const mergedAppMetadata = _.merge({}, secondaryUser.app_metadata, primaryUser.app_metadata, customizerCallback);
+  
+  return Promise.all([
+    auth0.users.updateUserMetadata(primaryUser.user_id, mergedUserMetadata),
+    auth0.users.updateAppMetadata(primaryUser.user_id, mergedAppMetadata)
+  ]).then(result => {
+    //save result in primary in session
+    primaryUser.user_metadata = result[0].user_metadata;
+    primaryUser.app_metadata = result[1].app_metadata;
+  });
+}
 
 /* GET user profile. */
 router.get('/', ensureLoggedIn, function(req, res) {
@@ -33,15 +56,15 @@ router.get('/suggested-users',ensureLoggedIn, (req,res) => {
 });
 
 router.post('/link-accounts/:targetUserId', ensureLoggedIn, (req,res,next) => {
-  // Fetch target user to verify email address matches again
-  // (this is needed because targetUserId comes from client side)
-  Auth0Client.getUser(req.params.targetUserId)
+    // Fetch target user to make verifications and merge metadata
+    Auth0Client.getUser(req.params.targetUserId)
     .then( targetUser => {
+      // verify email (this is needed because targetUserId came from client side)
       if(! targetUser.email_verified || targetUser.email !== req.user._json.email){
         throw new Error('User not valid for linking');
       }
-      // At this point we can apply any other verification 
-      // or save target user's metadata for merging
+      //merge metadata
+      return _mergeMetadata(req.user._json,targetUser);
     })
     .then(() => {
       return Auth0Client.linkAccounts(req.user.id,req.params.targetUserId);

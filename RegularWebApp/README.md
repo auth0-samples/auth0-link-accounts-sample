@@ -7,6 +7,7 @@ This Node.js Regular Web App serves as an example of the [Suggested Account Link
 * Login with any available connection using [Lock](https://github.com/auth0/lock)
 * Login with email passwordless connections, using [Lock Passwordless](https://github.com/auth0/lock-passwordless)
 * Suggestion of linking to other accounts if other accounts with same verified email address are found
+* Automatically merge user_metadata and app_metadata on account linking
 * Display of current profile and linked accounts
 * Option to unlink an account
 
@@ -28,6 +29,7 @@ This Node.js Regular Web App serves as an example of the [Suggested Account Link
 
 * Go to http://localhost:3000 and press any of the login buttons to log in to the App.
 * In order to see the suggestion to link to other accounts with same verified email, you need to have another user associated with the app. If you don't see it, you can logout and login again with another account with same email. If you use a passwordless connection, the email will be automatically verified on login.
+* In order to test the merging of app_metadata and user_metadata, make sure both users have some data before linking the accounts.
 * You will see a modal suggesting you to link the accounts that have same verified email addresses. 
 * Click the button to link the accounts.
 * Try unlinking accounts, too.
