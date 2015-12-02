@@ -67,6 +67,7 @@ function logout(){
 * Link Accounts.
 */
 function linkPasswordAccount(connection){
+  localStorage.setItem('linking','linking');
   var opts = {
     rememberLastLogin: false,
     dict: {
@@ -134,6 +135,7 @@ function linkPasswordlessEmailCode(){
 * Link using Passwordless Email Magic Link
 */
 function linkPasswordlessEmailLink(){
+  localStorage.setItem('linking','linking');
   // Initialize Passwordless Lock instance
   var lock = new Auth0LockPasswordless( AUTH0_CLIENT_ID, AUTH0_DOMAIN );
 
@@ -171,7 +173,7 @@ function linkAccount(secondaryJWT){
     }
   }).then(function(identities){
     alert('linked!');
-    showLinkedAccounts(identities);
+    reloadProfile();
   }).fail(function(jqXHR){
     alert('Error linking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
   });
@@ -243,29 +245,23 @@ function showLinkedAccounts(identities){
 }
 
 $(document).ready(function() {
-  var isUserLoggedIn = localStorage.getItem('id_token') !== null;
-  //handle case of already logged-in user
-  if (isUserLoggedIn) {
-    reloadProfile();
-  }
-
   var hash = lock.parseHash();
   //handle redirection from iDP after login
   if (hash) {
     window.location.hash = ''; //clean hash
     console.log('hash',hash);
     if (hash.error) {
-      alert('There was an error logging in ' + hash.error );
+      console.log('There was an error logging in ' + hash.error );
     } else {
-      // there is already a logged in user, the hash comes from a linking account operation, 
-      // and we should continue with the linking procedure
-      if (isUserLoggedIn){
+      if (localStorage.getItem('linking') === 'linking'){
+        //login to 2nd account for linking
+        localStorage.removeItem('linking');
         linkAccount(hash.id_token, hash.profile.sub);
       } else {
         // the hash comes from the site's first time login
         lock.getProfile(hash.id_token, function(err, profile) {
           if (err) {
-            alert('There was an error logging in. ' + err);
+            console.log('There was an error logging in. ' + err);
           } else {
             // Save the JWT token.
             localStorage.setItem('id_token', hash.id_token);
@@ -275,5 +271,8 @@ $(document).ready(function() {
         });
       }
     }
+  } else {
+    //handle case of already logged-in user
+    reloadProfile();
   }
 });
