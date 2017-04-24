@@ -6,8 +6,10 @@ const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
 
-const auth0 = require('auth0')({
-  token: process.env.AUTH0_APIV2_TOKEN
+const ManagementClient = require('auth0').ManagementClient
+const management = new ManagementClient({
+  token: process.env.AUTH0_APIV2_TOKEN,
+  domain: process.env.AUTH0_DOMAIN
 });
 
 /*
@@ -26,8 +28,8 @@ function _mergeMetadata(primaryUser, secondaryUser){
   const mergedAppMetadata = _.merge({}, secondaryUser.app_metadata, primaryUser.app_metadata, customizerCallback);
   
   return Promise.all([
-    auth0.users.updateUserMetadata(primaryUser.user_id, mergedUserMetadata),
-    auth0.users.updateAppMetadata(primaryUser.user_id, mergedAppMetadata)
+    management.users.updateUserMetadata({ id: primaryUser.user_id }, mergedUserMetadata),
+    management.users.updateAppMetadata({ id: primaryUser.user_id }, mergedAppMetadata)
   ]).then(result => {
     //save result in primary in session
     primaryUser.user_metadata = result[0].user_metadata;
