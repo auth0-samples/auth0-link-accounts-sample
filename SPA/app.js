@@ -273,6 +273,8 @@ $(document).ready(function() {
     }
   } else {
     //handle case of already logged-in user
-    reloadProfile();
+    if(localStorage.getItem('id_token') !== null) {
+      reloadProfile();
+    }
   }
 });
