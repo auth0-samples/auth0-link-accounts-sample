@@ -1,8 +1,17 @@
-var lock = new Auth0Lock(
-  // All these properties are set in auth0-variables.js
-  AUTH0_CLIENT_ID,
-  AUTH0_DOMAIN
-);
+var lock = newLock({ 
+    auth: {
+      responseType: 'token id_token'
+    }
+  });
+
+function newLock(opts) {
+  return new Auth0Lock(
+    // All these properties are set in auth0-variables.js
+    AUTH0_CLIENT_ID,
+    AUTH0_DOMAIN,
+    opts
+  );
+}
 
 /*
 * App login using Lock in Redirect Mode
@@ -55,6 +64,7 @@ function logout(){
   }).then(function(data){
     localStorage.removeItem('id_token');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('access_token');
     $('.login-box').show();
     $('.logged-in-box').hide(); 
   }).fail(function(err){
@@ -62,25 +72,31 @@ function logout(){
   });
 }
 
-
 /*
 * Link Accounts.
 */
 function linkPasswordAccount(connection){
   localStorage.setItem('linking','linking');
-  var opts = {
+ 
+  var opts = { 
     rememberLastLogin: false,
     dict: {
       signin: {
         title: 'Link another account'
+      },
+      auth: {
+        responseType: 'token id_token'
       }
     }
   };
-  if (connection){
+        
+  if (connection) {
     opts.connections = [connection];
   }
+
   //open lock in signin mode, with the customized options for linking
-  lock.showSignin(opts);
+  lock = newLock(opts)
+  lock.show();
 }
 
 /*
@@ -145,11 +161,12 @@ function linkPasswordlessEmailLink(){
 }
 
 function reloadProfile(){
-  lock.getProfile(localStorage.getItem('id_token'), function(err, profile) {
-    if (err) {
-      alert('There was an error getting profile. ' + err);
+  
+  lock.getUserInfo(localStorage.getItem('access_token'), function(error, profile) {
+    if (error) {
+      alert('There was an error getting user info. ' + error);
     } else {
-      showLoggedInUser(profile);
+      showLoggedInUser(profile);   
     }
   });
 }
@@ -221,6 +238,32 @@ function isRootIdentity(identity){
 }
 
 /*
+* Handles the "authenticated" event for all Lock log-ins.
+*/
+
+function lockAuthenticated(authResult)
+{
+    if (localStorage.getItem('linking') === 'linking') {
+      // The "Link Account" method first saves the "linking" item and then authenticates
+      // We identify that flow here, so after each subsequent log-in, we link the accounts
+      localStorage.removeItem('linking');
+      linkAccount(authResult.idToken, authResult.idTokenPayload.sub);
+    } else {
+      lock.getUserInfo(authResult.accessToken, function(error, profile) {
+        if (error) {
+          alert('There was an error getting user info. ' + error);
+          return;
+        }
+
+        localStorage.setItem('access_token', authResult.accessToken);
+        localStorage.setItem('id_token', authResult.idToken);
+        localStorage.setItem('user_id', profile.user_id);
+        showLoggedInUser(profile);
+      });
+    }
+}
+
+/*
 * Displays Linked Accounts as table rows in UI
 */
 function showLinkedAccounts(identities){
@@ -245,36 +288,10 @@ function showLinkedAccounts(identities){
 }
 
 $(document).ready(function() {
-  var hash = lock.parseHash();
-  //handle redirection from iDP after login
-  if (hash) {
-    window.location.hash = ''; //clean hash
-    console.log('hash',hash);
-    if (hash.error) {
-      console.log('There was an error logging in ' + hash.error );
-    } else {
-      if (localStorage.getItem('linking') === 'linking'){
-        //login to 2nd account for linking
-        localStorage.removeItem('linking');
-        linkAccount(hash.id_token, hash.profile.sub);
-      } else {
-        // the hash comes from the site's first time login
-        lock.getProfile(hash.id_token, function(err, profile) {
-          if (err) {
-            console.log('There was an error logging in. ' + err);
-          } else {
-            // Save the JWT token.
-            localStorage.setItem('id_token', hash.id_token);
-            localStorage.setItem('user_id', profile.user_id);
-            showLoggedInUser(profile);
-          }
-        });
-      }
-    }
-  } else {
-    //handle case of already logged-in user
-    if(localStorage.getItem('id_token') !== null) {
+    // Listening for the authenticated event
+  lock.on("authenticated",lockAuthenticated);
+
+  if(localStorage.getItem('id_token') !== null) {
       reloadProfile();
     }
-  }
 });

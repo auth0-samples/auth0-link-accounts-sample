@@ -18,19 +18,22 @@ block content
     button.btn.btn-warning(onclick='loginEmailLink()') Login with a magic link via email
 
 block script
-  script(src='https://cdn.auth0.com/js/lock-8.2.min.js')
-  script(src='https://cdn.auth0.com/js/lock-passwordless-2.2.min.js')
+  script(src='https://cdn.auth0.com/js/lock/10.18.0/lock.min.js')
+  script(src='https://cdn.auth0.com/js/lock-passwordless-2.2.3.min.js')
   script.
     
     function signin() {    
-      var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
-      lock.show({
-          callbackURL: '#{env.AUTH0_CALLBACK_URL}'
-        , responseType: 'code'
-        , authParams: {
-          scope: 'openid'
-        }
+      var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}', {
+        auth: {
+          redirectUrl: '#{env.AUTH0_CALLBACK_URL}',
+          responseType: 'code',
+          params: {
+            scope: 'openid'
+            }
+          }
       });
+
+      lock.show();
     }
 
     function loginEmailCode() {
