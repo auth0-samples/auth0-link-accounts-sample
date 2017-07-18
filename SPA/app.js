@@ -203,7 +203,7 @@ function unlinkAccount(secondaryProvider, secondaryUserId){
   var primaryUserId = localStorage.getItem('user_id');
   var primaryJWT = localStorage.getItem('id_token');
   $.ajax({
-    type: 'DELETE',
+    type: 'au',
     url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + primaryUserId +
          '/identities/' + secondaryProvider + '/' + secondaryUserId,
     headers: {
@@ -240,9 +240,7 @@ function isRootIdentity(identity){
 /*
 * Handles the "authenticated" event for all Lock log-ins.
 */
-
-function lockAuthenticated(authResult)
-{
+function lockAuthenticated(authResult) {
     if (localStorage.getItem('linking') === 'linking') {
       // The "Link Account" method first saves the "linking" item and then authenticates
       // We identify that flow here, so after each subsequent log-in, we link the accounts
@@ -288,10 +286,11 @@ function showLinkedAccounts(identities){
 }
 
 $(document).ready(function() {
-    // Listening for the authenticated event
-  lock.on("authenticated",lockAuthenticated);
+  // Listening for the authenticated event
+  lock.on("authenticated", lockAuthenticated);
 
-  if(localStorage.getItem('id_token') !== null) {
+  // Handle case of already logged-in user
+  if (localStorage.getItem('id_token') !== null) {
       reloadProfile();
-    }
+  }
 });
