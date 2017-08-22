@@ -121,11 +121,8 @@ function linkPasswordlessSMS() {
     auth: {
       responseType: "token id_token"
     },
-    dict: {
-      phone: {
-        headerText:
-          "Enter your phone to sign in <br>or create an account to link to."
-      }
+    languageDictionary: {
+      passwordlessSMSInstructions: "Enter your phone to sign in <br>or create an account to link to."
     }
   };
   var lock = new Auth0LockPasswordless(AUTH0_CLIENT_ID, AUTH0_DOMAIN, opts);
@@ -146,11 +143,8 @@ function linkPasswordlessEmailCode() {
     auth: {
       responseType: "token id_token"
     },
-    dict: {
-      phone: {
-        headerText:
-          "Enter your email to sign in or sign up to the account to link to."
-      }
+    languageDictionary: {
+      passwordlessSMSInstructions: "Enter your email to sign in or sign up to the account to link to."
     }
   };
   var lock = new Auth0LockPasswordless(AUTH0_CLIENT_ID, AUTH0_DOMAIN, opts);
@@ -171,11 +165,8 @@ function linkPasswordlessEmailLink() {
     auth: {
       responseType: "token id_token"
     },
-    dict: {
-      phone: {
-        headerText:
-          "Enter your email to sign in or sign up to the account to link to."
-      }
+    languageDictionary: {
+      passwordlessSMSInstructions: "Enter your email to sign in or sign up to the account to link to."
     }
   };
   var lock = new Auth0LockPasswordless(AUTH0_CLIENT_ID, AUTH0_DOMAIN, opts);
