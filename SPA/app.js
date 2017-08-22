@@ -203,7 +203,7 @@ function unlinkAccount(secondaryProvider, secondaryUserId){
   var primaryUserId = localStorage.getItem('user_id');
   var primaryJWT = localStorage.getItem('id_token');
   $.ajax({
-    type: 'au',
+    type: 'DELETE',
     url: 'https://' + AUTH0_DOMAIN +'/api/v2/users/' + primaryUserId +
          '/identities/' + secondaryProvider + '/' + secondaryUserId,
     headers: {
