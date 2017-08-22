@@ -89,13 +89,8 @@ function linkPasswordAccount(connection) {
     overrides: {
       __useCrossAuth: true
     },
-    dict: {
-      signin: {
-        title: "Link another account"
-      },
-      auth: {
-        responseType: "token id_token"
-      }
+    languageDictionary: {
+      title: "Link another account"
     }
   };
 
