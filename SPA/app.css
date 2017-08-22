@@ -6,7 +6,8 @@
     margin-right: 10px;
 }
 pre {
-  max-height: 100px;
+  max-height: 500px;
+  overflow: auto;
 }
 
 td > pre {
