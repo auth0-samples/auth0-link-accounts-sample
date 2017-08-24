@@ -30,6 +30,4 @@ node_modules
 config.json
 data.json
 dist
-SuggestLinking/.env
-RegularWebApp/.env
-SPA/auth0-variables.js
+.env
