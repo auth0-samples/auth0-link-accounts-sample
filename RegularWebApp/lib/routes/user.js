@@ -39,15 +39,18 @@ function _mergeMetadata(primaryUser, secondaryUser){
 
 /* GET user profile. */
 router.get('/', ensureLoggedIn, function(req, res) {
-  console.log('returning user',req.user._json);
-  res.render('user', { 
-    user: req.user._json, //returning req.user._json, since it contains the user_metadata and app_metadata properties the root user doesn't have.
+  return Auth0Client.getUser(req.user._json.sub)
+  .then(user => {
+    console.log('returning user', user);
+    res.render('user', { 
+      user: user,
+    });
   });
 });
 
 router.get('/suggested-users',ensureLoggedIn, (req,res) => {
   let suggestedUsers = [];
-  Auth0Client.getUsersWithSameVerifiedEmail(req.user._json)
+  Auth0Client.getUsersWithSameVerifiedEmail(req.user._json.sub)
     .then(identities => {
       suggestedUsers = identities;
     }).catch( err => {
@@ -58,31 +61,34 @@ router.get('/suggested-users',ensureLoggedIn, (req,res) => {
 });
 
 router.post('/link-accounts/:targetUserId', ensureLoggedIn, (req,res,next) => {
+  Auth0Client.getUser(req.user._json.sub)
+  .then(currentUser => {
     // Fetch target user to make verifications and merge metadata
     Auth0Client.getUser(req.params.targetUserId)
     .then( targetUser => {
       // verify email (this is needed because targetUserId came from client side)
-      if(! targetUser.email_verified || targetUser.email !== req.user._json.email){
+      if(! targetUser.email_verified || targetUser.email !== currentUser.email){
         throw new Error('User not valid for linking');
       }
       //merge metadata
-      return _mergeMetadata(req.user._json,targetUser);
+      return _mergeMetadata(currentUser,targetUser);
     })
     .then(() => {
-      return Auth0Client.linkAccounts(req.user.id,req.params.targetUserId);
+      return Auth0Client.linkAccounts(currentUser.user_id,req.params.targetUserId);
     })
     .then( identities => {
-      req.user.identities = req.user._json.identities = identities;
+      req.user.identities = currentUser.identities = identities;
       res.send(identities);
     })
-    .catch( err => {
-      console.log('Error linking accounts!',err);
-      next(err);
-    });
+  })
+  .catch( err => {
+    console.log('Error linking accounts!',err);
+    next(err);
+  });
 });
 
 router.post('/unlink-accounts/:targetUserProvider/:targetUserId',ensureLoggedIn, (req,res,next) => {
-  Auth0Client.unlinkAccounts(req.user.id, req.params.targetUserProvider, req.params.targetUserId)
+  Auth0Client.unlinkAccounts(req.user._json.sub, req.params.targetUserProvider, req.params.targetUserId)
   .then( identities => {
     req.user.identities = req.user._json.identities = identities;
     res.send(identities);

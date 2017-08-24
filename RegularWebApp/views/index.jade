@@ -23,12 +23,12 @@ block script
     
     function signin() {    
       var lock = new Auth0Lock('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}', {
+        oidcConformant: true,
         auth: {
-          oidcConformant: true,
           redirectUrl: '#{env.AUTH0_CALLBACK_URL}',
           responseType: 'code',
           params: {
-            scope: 'openid'
+            scope: 'openid profile'
           }
         }
       });
@@ -38,13 +38,13 @@ block script
 
     function loginEmailCode() {
       var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}', {
+        oidcConformant: true,
+        passwordlessMethod: 'code',
         auth: {
-          oidcConformant: true,
           redirectUrl: '#{env.AUTH0_CALLBACK_URL}',
           responseType: 'code',
-          passwordlessMethod: 'code',
           params: {
-            scope: 'openid'
+            scope: 'openid profile'
           }
         }
       });
@@ -54,14 +54,15 @@ block script
 
     function loginEmailLink() {
       var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}', {
+        oidcConformant: true,
+        passwordlessMethod: 'link',
         auth: {
-          oidcConformant: true,
           redirectUrl: '#{env.AUTH0_CALLBACK_URL}',
           responseType: 'code',
-          passwordlessMethod: 'link',
           params: {
-            scope: 'openid'
+            scope: 'openid profile'
           }
         }
       });
+      lock.show();
     }

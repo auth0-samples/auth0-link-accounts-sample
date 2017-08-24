@@ -1,7 +1,10 @@
 var lock = newLock({
   oidcConformant: true,
   auth: {
-    responseType: "token id_token"
+    responseType: "token id_token",
+    params: {
+      scope: "openid profile"
+    }
   },
   overrides: {
     __useCrossAuth: true
@@ -33,7 +36,10 @@ function loginPasswordlessSMS() {
     oidcConformant: true,
     allowedConnections: ["sms"],
     auth: {
-      responseType: "token id_token"
+      responseType: "token id_token",
+      params: {
+        scope: "openid profile"
+      }
     }
   });
   lock.show();
@@ -46,10 +52,12 @@ function loginPasswordlessEmailCode() {
   // Initialize Passwordless Lock instance
   var lock = new Auth0LockPasswordless(AUTH0_CLIENT_ID, AUTH0_DOMAIN, {
     oidcConformant: true,
-    allowedConnections: ["email"],
     passwordlessMethod: "code",
     auth: {
-      responseType: "token id_token"
+      responseType: "token id_token",
+      params: {
+        scope: "openid profile"
+      }
     }
   });
   lock.show();
@@ -133,7 +141,6 @@ function linkPasswordlessEmailCode() {
   var opts = {
     oidcConformant: true,
     autoclose: true,
-    allowedConnections: ["email", "acme"],
     passwordlessMethod: "code",
     auth: {
       responseType: "token id_token"
