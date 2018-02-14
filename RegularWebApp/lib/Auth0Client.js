@@ -12,7 +12,7 @@ class Auth0Client {
 					'Authorization': `Bearer ${process.env.AUTH0_APIV2_TOKEN}`
 				}
 			};
-			console.log('reqOpts',reqOpts);
+			console.log('reqOpts - getUser',reqOpts);
 			request(reqOpts, (error, response, body) => {
 				if (error) {
 					return reject(error);
@@ -38,10 +38,10 @@ class Auth0Client {
 				},
 				qs: {
 			    search_engine: 'v2',
-			    q: `email:"${user.email}" AND email_verified:true -user_id:"${user.user_id}"`
+			    q: `email:"${user.email}" AND email_verified:true -user_id:"${user.sub}"`
 			  }
 			};
-			console.log('reqOpts',reqOpts);
+			console.log('reqOpts - getUsersWithSameVerifiedEmail',reqOpts);
 			request(reqOpts, (error, response, body) => {
 				console.log('getUsersWithSameVerifiedEmail err, status, body',error,response.statusCode,body);
 				if (error) {
@@ -90,6 +90,8 @@ class Auth0Client {
 		      user_id
 		    }
 		  };
+		  console.log('reqOpt-linkAccounts',reqOpts);
+			
 		  request(reqOpts,(error, response, body) => {
 				if (error) {
 					return reject(error);
@@ -130,7 +132,7 @@ class Auth0Client {
 					'Authorization': `Bearer ${process.env.AUTH0_APIV2_TOKEN}`
 				}
 			};
-			console.log('reqOpts',reqOpts);
+			console.log('reqOpts - unlinkAccounts',reqOpts);
 			request(reqOpts,(error, response, body) => {
 				if (error) {
 					return reject(error);

@@ -18,8 +18,7 @@ block content
     button.btn.btn-warning(onclick='loginEmailLink()') Login with a magic link via email
 
 block script
-  script(src='https://cdn.auth0.com/js/lock/10.18.0/lock.min.js')
-  script(src='https://cdn.auth0.com/js/lock-passwordless-2.2.3.min.js')
+  script(src='https://cdn.auth0.com/js/lock/11.2/lock.min.js')
   script.
     
     function signin() {    
@@ -28,7 +27,7 @@ block script
           redirectUrl: '#{env.AUTH0_CALLBACK_URL}',
           responseType: 'code',
           params: {
-            scope: 'openid'
+            scope: 'openid profile email'
             }
           }
       });
@@ -37,11 +36,34 @@ block script
     }
 
     function loginEmailCode() {
-      var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
-      lock.emailcode( {callbackURL: '#{env.AUTH0_CALLBACK_URL}'} );
+      var opts =  {
+        allowedConnections: ['email'],
+        auth: {
+          redirectUrl: '#{env.AUTH0_CALLBACK_URL}',
+          responseType: 'code',
+          params: {
+            scope: 'openid profile email'
+            }
+          }
+      };
+
+      var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}', opts);
+      lock.show();
     }
 
     function loginEmailLink() {
-      var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}');
-      lock.magiclink( {callbackURL: '#{env.AUTH0_CALLBACK_URL}'} );
+      var opts =  {
+        allowedConnections: ['email'],
+        passwordlessMethod: 'link',
+        auth: {
+          redirectUrl: '#{env.AUTH0_CALLBACK_URL}',
+          responseType: 'code',
+          params: {
+            scope: 'openid profile email'
+            }
+          }
+      };
+
+      var lock = new Auth0LockPasswordless('#{env.AUTH0_CLIENT_ID}', '#{env.AUTH0_DOMAIN}', opts);
+      lock.show();
     }
