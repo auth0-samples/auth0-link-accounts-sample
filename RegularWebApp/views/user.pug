@@ -15,17 +15,20 @@ mixin suggestedUserMixin(identity)
       button.btn.btn-success.btn-xs.unlink(onclick='linkAccount("#{identity.user_id}")') link 
 
 mixin identityMixin(identity)
-  tr(data-id='#{identity.user_id}')
+  tr(data-id=identity.user_id)
     td #{identity.provider}
     td #{identity.user_id}
     td #{identity.connection}
     td 
       if (identity.profileData && identity.profileData.picture)
-        img.profile-image(src='#{identity.profileData && identity.profileData.picture}')
+        img.profile-image(src=identity.profileData && identity.profileData.picture)
     td 
       pre #{JSON.stringify(identity.profileData,null,2)}
     td
-      button.btn.btn-danger.btn-xs.unlink(onclick='unlinkAccount("#{identity.provider}","#{identity.user_id}")') unlink 
+      form(method='POST' action='/link/delete')
+        input#provider(type='hidden' name='provider' value=identity.provider)
+        input#user_id(type='hidden' name='userId' value=identity.user_id)
+        button.btn.btn-danger.btn-xs.unlink(type='submit') unlink 
 
 mixin description(label,val)
   dt #{label}
@@ -35,7 +38,7 @@ block content
   
   .panel.panel-default
     .panel-heading 
-      img.img-circle.profile-image(src='#{user.picture}') 
+      img.img-circle.profile-image(src=user.picture) 
       |Root Profile 
     .panel-body
       dl.dl-horizontal
@@ -68,7 +71,10 @@ block content
               +identityMixin(identity)
       else
         .panel-body
-          p You don't have any accounts linked.
+          if (wrongAccountError)
+            strong Skipping account linking as authenticated user is different from target linking user.
+          else
+            p You don't have any accounts linked.
 
   .modal#suggest-modal
     .modal-dialog.modal-lg
@@ -91,64 +97,43 @@ block content
           button.btn.btn-default(type="button" data-dismiss="modal") No, thanks.
 
 block script
-  script.
-    var user = !{JSON.stringify(user)};
-    console.log('user',user);
-        
-    function linkAccount(targetUserId) {
-      $.ajax({
-        type: 'POST',
-        url: '/user/link-accounts/' + targetUserId,
-      }).then(function(){
-        alert('linked!!');
-        location.reload();
-      }).fail(function(jqXHR){
-        alert('Error linking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
-      });
-    }
-    
-    function unlinkAccount(provider,userId){
-      $.ajax({
-        type: 'POST',
-        url: '/user/unlink-accounts/' + provider + '/' + userId,
-      }).then(function(){
-        alert('unlinked!!');
-        location.reload();
-      }).fail(function(jqXHR){
-        alert('Error unlinking Accounts: ' + jqXHR.status + " " + jqXHR.responseText);
-      });
-    }
-    
-    function getSuggestedUsers(){
-      $.ajax({
-        url: '/user/suggested-users',
-        cache: false
-      }).then(function(identities){
-        if (identities.length > 0){
+  if (user.email_verified)
+    script.
+      function getSuggestedUsers(){
+        $.ajax({
+          url: '/user/suggested-users',
+          cache: false
+        }).then(function(identities){
+          if (identities.length > 0){
 
-          $('#suggested-users tr').remove();
+            $('#suggested-users tr').remove();
 
-          $.each(identities,function(index,identity){
-            $('#suggested-users').append(
-              `<tr>
-                <td>${identity.user_id}</td>
-                <td>${identity.name}</td>
-                <td>${JSON.stringify(identity.user_metadata,null,2)}</td>
-                <td>${JSON.stringify(identity.app_metadata,null,2)}</td>
-                <td><button onclick="linkAccount('${identity.user_id}')" class="btn btn-success">Link</button></td>
-              </tr>`);
-          });
+            $.each(identities,function(index,identity){
+              $('#suggested-users').append(
+                `<tr>
+                  <td>${identity.user_id}</td>
+                  <td>${identity.name}</td>
+                  <td>${JSON.stringify(identity.user_metadata,null,2)}</td>
+                  <td>${JSON.stringify(identity.app_metadata,null,2)}</td>
+                  <td>
+                    <form action="/link" method="post">
+                      <input type="hidden" name="userid" value="${identity.user_id}">
+                      <input type="hidden" name="email" value="${identity.email}">
+                      <input type="hidden" name="connection" value="${identity.identities[0].connection}">
 
-          $('#suggest-modal').modal();
-        }
-      }).fail(function(jqXHR){
-        alert('Error getting suggested users: ' + jqXHR.status + " " + jqXHR.responseText);
-      });
-    }
+                      <button type="submit" class="btn btn-success">Link</button>
+                    </form>
+                  </td>
+                </tr>`);
+            });
 
-    $(document).ready(function() {
-      //request suggested accounts to link to
-      if (user.email_verified){
-        getSuggestedUsers();
+            $('#suggest-modal').modal();
+          }
+        }).fail(function(jqXHR){
+          alert('Error getting suggested users: ' + jqXHR.status + " " + jqXHR.responseText);
+        });
       }
-    });
+
+      $(document).ready(function() {
+          getSuggestedUsers();
+      });
