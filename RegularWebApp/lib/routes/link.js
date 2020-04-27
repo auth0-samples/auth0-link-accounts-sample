@@ -17,6 +17,7 @@ router.post("/", (req, res) => {
   // save userid in session.
   req.appSession.linking = { targetUserId: userid };
 
+  // [re]-authenticate target account before account linking
   res.openid.login({
     returnTo: "/user",
     authorizationParams: {
@@ -67,7 +68,6 @@ async function mergeMetadata(primaryUserId, secondaryUserId) {
     primaryUser.app_metadata,
     customizerCallback
   );
-  //const { user_metadata, app_metadata } =
   await auth0Client.updateUser(primaryUserId, {
     user_metadata: mergedUserMetadata,
     app_metadata: mergedAppMetadata,

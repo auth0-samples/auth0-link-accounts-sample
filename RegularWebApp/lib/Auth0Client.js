@@ -59,16 +59,13 @@ class Auth0Client {
     });
   }
 
-  async getUsersWithSameVerifiedEmail(user) {
-    if (!user.email_verified)
-      throw new Error(`User's email ${user.email} is not verified`);
-
-    debug("searching maching users with email *%s* ...", user.email);
+  async getUsersWithSameVerifiedEmail({ sub, email }) {
+    debug("searching maching users with email *%s* ...", email);
     return await this.request({
       url: `${process.env.ISSUER_BASE_URL}/api/v2/users`,
       qs: {
         search_engine: "v3",
-        q: `email:"${user.email}" AND email_verified:true -user_id:"${user.sub}"`,
+        q: `email:"${email}" AND email_verified:true -user_id:"${sub}"`,
       },
     });
   }

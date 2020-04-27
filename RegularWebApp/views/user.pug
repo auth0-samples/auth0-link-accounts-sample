@@ -1,44 +1,42 @@
 extends user-layout
 
-mixin suggestedUserMixin(identity)
-  tr(data-id='#{identity.user_id}')
-    td #{identity.user_id}
-    td #{identity.provider || identity.user_id.split('|')[0]}
+mixin suggestedUserMixin(user)
+  tr(data-id=user.user_id)
+    td=user.user_id
+    td=user.name
     td 
-      if (identity.picture)
-        img.profile-image(src='#{identity.picture}')
-    td #{identity.name}
-    td #{identity.nickname}
-    td #{identity.user_metadata}
-    td #{identity.app_metadata}  
+      if (user.picture)
+        img.profile-image(src=user.picture)
+    td=JSON.stringify(user.user_metadata, null, 2)
+    td=JSON.stringify(user.app_metadata, null, 2) 
     td
-      button.btn.btn-success.btn-xs.unlink(onclick='linkAccount("#{identity.user_id}")') link 
+      form(action="/link" method="post")
+        input(type="hidden" name="userid" value=user.user_id)
+        input(type="hidden" name="email" value=user.email)
+        input(type="hidden" name="connection" value=user.identities[0].connection)
+        button.btn.btn-success.btn-xs.unlink link
 
 mixin identityMixin(identity)
   tr(data-id=identity.user_id)
-    td #{identity.provider}
-    td #{identity.user_id}
-    td #{identity.connection}
+    td=identity.provider
+    td=identity.user_id
+    td=identity.connection
     td 
       if (identity.profileData && identity.profileData.picture)
         img.profile-image(src=identity.profileData && identity.profileData.picture)
     td 
-      pre #{JSON.stringify(identity.profileData,null,2)}
+      pre=JSON.stringify(identity.profileData,null,2)
     td
       form(method='POST' action='/link/delete')
         input#provider(type='hidden' name='provider' value=identity.provider)
         input#user_id(type='hidden' name='userId' value=identity.user_id)
         button.btn.btn-danger.btn-xs.unlink(type='submit') unlink 
 
-mixin description(label,val)
-  dt #{label}
-  dd #{val}
-
 block content
-  
+
   .panel.panel-default
     .panel-heading 
-      img.img-circle.profile-image(src=user.picture) 
+      img.img-circle.profile-image(src=`${user.picture}`) 
       |Root Profile 
     .panel-body
       dl.dl-horizontal
@@ -54,27 +52,27 @@ block content
 
 
   .panel.panel-default
-      .panel-heading Linked Accounts
-      if (user.identities.length > 1)
-        table.table.identities
-          thead
-            tr
-              th provider
-              th id
-              th connection
-              th(style='width:5%')
-              th profileData
-              th actions
-          tbody
-          each identity in user.identities
-            if (identity.provider !== user.user_id.split('|')[0] && identity.user_id !== user.user_id.split('|')[1])
-              +identityMixin(identity)
-      else
-        .panel-body
-          if (wrongAccountError)
-            strong Skipping account linking as authenticated user is different from target linking user.
-          else
-            p You don't have any accounts linked.
+    .panel-heading Linked Accounts
+    if (user.identities.length > 1)
+      table.table.identities
+        thead
+          tr
+            th provider
+            th id
+            th connection
+            th(style='width:5%')
+            th profileData
+            th actions
+        tbody
+        each identity in user.identities
+          if (identity.provider !== user.user_id.split('|')[0] && identity.user_id !== user.user_id.split('|')[1])
+            +identityMixin(identity)
+    else
+      .panel-body
+        if (wrongAccountError)
+          strong Skipping account linking as authenticated user is different from target linking user.
+        else
+          p You don't have any accounts linked.
 
   .modal#suggest-modal
     .modal-dialog.modal-lg
@@ -83,57 +81,25 @@ block content
           button(type="button" class="close" data-dismiss="modal" aria-hidden="true") ×
           h4 Link Accounts
         .modal-body
-          p We noticed there are other registered users with same and verified e-mail address: <strong>#{user.email}</strong>. Do you want to link the accounts and merge its metadata?
+          p We noticed there are other registered users with same and verified e-mail address: #[strong=user.email]. Do you want to link the accounts and merge its metadata?
           table.table.table-condensed
             thead
               tr
                 th user_id
                 th name
+                th picture
                 th user_metadata
                 th app_metadata
                 th actions
             tbody#suggested-users
+              each user in suggestedUsers
+                +suggestedUserMixin(user)
         .modal-footer
           button.btn.btn-default(type="button" data-dismiss="modal") No, thanks.
 
 block script
-  if (user.email_verified)
+  if (suggestedUsers.length > 0 )
     script.
-      function getSuggestedUsers(){
-        $.ajax({
-          url: '/user/suggested-users',
-          cache: false
-        }).then(function(identities){
-          if (identities.length > 0){
-
-            $('#suggested-users tr').remove();
-
-            $.each(identities,function(index,identity){
-              $('#suggested-users').append(
-                `<tr>
-                  <td>${identity.user_id}</td>
-                  <td>${identity.name}</td>
-                  <td>${JSON.stringify(identity.user_metadata,null,2)}</td>
-                  <td>${JSON.stringify(identity.app_metadata,null,2)}</td>
-                  <td>
-                    <form action="/link" method="post">
-                      <input type="hidden" name="userid" value="${identity.user_id}">
-                      <input type="hidden" name="email" value="${identity.email}">
-                      <input type="hidden" name="connection" value="${identity.identities[0].connection}">
-
-                      <button type="submit" class="btn btn-success">Link</button>
-                    </form>
-                  </td>
-                </tr>`);
-            });
-
-            $('#suggest-modal').modal();
-          }
-        }).fail(function(jqXHR){
-          alert('Error getting suggested users: ' + jqXHR.status + " " + jqXHR.responseText);
-        });
-      }
-
       $(document).ready(function() {
-          getSuggestedUsers();
+        $('#suggest-modal').modal();
       });
