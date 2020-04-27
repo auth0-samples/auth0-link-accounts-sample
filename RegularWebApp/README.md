@@ -36,14 +36,6 @@ export DEBUG=auth0-link-accounts-sample
 npm start
 ```
 
-### Grant Types
-
-![](pngs/grant_types.png)
-
-### Management API Scopes
-
-![](pngs/mgmt-api-scopes.png)
-
 ## Usage
 
 - Go to http://localhost:3000 and press login buttons to log in to the App.
@@ -52,3 +44,11 @@ npm start
 - You will see a modal suggesting you to link the accounts that have same verified email addresses.
 - Click the button to link the accounts.
 - Try unlinking accounts, too.
+
+### Grant Types
+
+![](pngs/grant_types.png)
+
+### Management API Scopes
+
+![](pngs/mgmt-api-scopes.png)
