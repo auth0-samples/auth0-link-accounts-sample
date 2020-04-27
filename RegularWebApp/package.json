@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "body-parser": "1.19.0",
-    "connect-ensure-login": "0.1.1",
     "cookie-parser": "1.4.5",
     "debug": "4.1.1",
     "dotenv": "^1.2.0",
