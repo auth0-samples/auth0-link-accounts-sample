@@ -7,7 +7,7 @@ This Node.js Regular Web App serves as an example of the [Suggested Account Link
 - Login with any available connection using [Universal Login](https://auth0.com/docs/universal-login)
 - Suggestion of linking to other accounts if other accounts with same verified email address are found
 - [Re]-authentication of the target user **before** account linking
-- Verfication of the reauthenticated target user **before** account linking
+- Verification of the reauthenticated target user **before** account linking
 - Automatically merge user_metadata and app_metadata on account linking
 - Display of current profile and linked accounts
 - Option to unlink an account
