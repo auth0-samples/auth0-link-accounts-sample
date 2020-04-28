@@ -36,3 +36,4 @@ dist
 SuggestLinking/.env
 RegularWebApp/.env
 SPA/auth0-variables.js
+auth_config.json
