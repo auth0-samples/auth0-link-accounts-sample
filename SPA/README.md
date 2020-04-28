@@ -1,11 +1,11 @@
-# Auth0 jQuery Single Page App Account Linking Sample
+# Auth0 Vanilla JS SPA Account Linking Sample
 
 This Single Page App serves as an example of the [User Initiated Account Linking Scenario](https://auth0.com/docs/link-accounts/user-initiated), where the user can click on a **link account** button and login with other identity to link to.
 
 ## Key Features
 
-- Login with any available connection using [Lock](https://github.com/auth0/lock)
-- Login with any passwordless connections, using [Lock Passwordless](https://github.com/auth0/lock-passwordless)
+- Login with any available connection using [Universal Login](https://auth0.com/docs/universal-login)
+- Login with any passwordless connections, using [Universal Login](https://auth0.com/docs/universal-login)
 - Display of current profile and already linked accounts
 - Option to unlink an account
 - Option to link another account
