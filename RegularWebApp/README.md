@@ -21,7 +21,7 @@ This Node.js Regular Web App serves as an example of the [Suggested Account Link
 1. Install Node.js v12.16.2 or later
 2. Add a .env file containing your config. You can use sample.env as template.
 3. Create a "Regular Web Application" using [Auth0 Dashboard](https://manage.auth0.com) and enable [Implict, Authorization Code and Client Credentials grants](#grant-types)
-4. In your App's configuration on the [Auth0 Dashboard](https://manage.auth0.com), add `http://localhost:3000/callback, http://localhost:3000/link/callback` to the list of **Allowed Callback URLs**.
+4. In your App's configuration on the [Auth0 Dashboard](https://manage.auth0.com), add `http://localhost:3000/callback, http://localhost:3000/link/callback` to the list of **Allowed Callback URLs** and `http://localhost:3000` to **Allowed Logout URLs** list.
 5. [Grant "read:users update:users"](#management-api-scopes) scopes to your "Regular Web App".
 6. Make sure you have at least two enabled econnections where you can login with the same email. A Database and a Social provide a good simple testing setup.
 7. Run: `npm install` and `npm run start`

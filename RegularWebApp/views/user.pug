@@ -50,6 +50,23 @@ block content
         dd
           pre.profile=JSON.stringify(user,null,2)
 
+  if (suggestedUsers.length > 0 )
+    .panel.panel-default
+      .panel-heading Accounts with the same email address
+      .panel-body
+        p We noticed there are other registered users with same verified e-mail address: #[strong=user.email]. Do you want to link the accounts and merge its metadata?
+        table.table.table-condensed
+          thead
+            tr
+              th user_id
+              th name
+              th picture
+              th user_metadata
+              th app_metadata
+              th actions
+          tbody#suggested-users
+            each user in suggestedUsers
+              +suggestedUserMixin(user)
 
   .panel.panel-default
     .panel-heading Linked Accounts
@@ -73,33 +90,3 @@ block content
           strong Skipping account linking as authenticated user is different from target linking user.
         else
           p You don't have any accounts linked.
-
-  .modal#suggest-modal
-    .modal-dialog.modal-lg
-      .modal-content
-        .modal-header
-          button(type="button" class="close" data-dismiss="modal" aria-hidden="true") ×
-          h4 Link Accounts
-        .modal-body
-          p We noticed there are other registered users with same and verified e-mail address: #[strong=user.email]. Do you want to link the accounts and merge its metadata?
-          table.table.table-condensed
-            thead
-              tr
-                th user_id
-                th name
-                th picture
-                th user_metadata
-                th app_metadata
-                th actions
-            tbody#suggested-users
-              each user in suggestedUsers
-                +suggestedUserMixin(user)
-        .modal-footer
-          button.btn.btn-default(type="button" data-dismiss="modal") No, thanks.
-
-block script
-  if (suggestedUsers.length > 0 )
-    script.
-      $(document).ready(function() {
-        $('#suggest-modal').modal();
-      });

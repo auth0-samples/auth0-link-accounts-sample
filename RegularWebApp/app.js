@@ -21,6 +21,7 @@ app.use(
     appSession: {
       cookieSameSite: "None",
     },
+    auth0Logout: true,
     httpOptions: {
       timeout: 10000,
     },
