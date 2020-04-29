@@ -104,46 +104,6 @@
                 </li>
                 <!-- /Fullsize dropdown -->
               </ul>
-
-              <!-- Responsive login button: show if NOT authenticated -->
-              <ul class="navbar-nav d-md-none auth-invisible">
-                <button
-                  class="btn btn-primary btn-block auth-invisible hidden"
-                  id="qsLoginBtn"
-                  onclick="login()"
-                >
-                  Log in
-                </button>
-              </ul>
-              <!-- /Responsive login button -->
-
-              <!-- Responsive profile dropdown: show if authenticated -->
-              <ul
-                class="navbar-nav d-md-none auth-visible hidden justify-content-between"
-                style="min-height: 125px;"
-              >
-                <li class="nav-item">
-                  <span class="user-info">
-                    <!-- Profile image should be set to the profile picture from the id token -->
-                    <img
-                      alt="Profile picture"
-                      class="nav-user-profile d-inline-block profile-image rounded-circle mr-3"
-                      width="50"
-                    />
-                    <!-- Show the user's full name from the id token here -->
-                    <h6 class="d-inline-block nav-user-name user-name"></h6>
-                  </span>
-                </li>
-                <li>
-                  <i class="fas fa-user mr-3"></i>
-                  <a href="/profile" class="route-link">Profile</a>
-                </li>
-
-                <li>
-                  <i class="fas fa-power-off mr-3"></i>
-                  <a href="#" id="qsLogoutBtn" onclick="logout()">Log out</a>
-                </li>
-              </ul>
             </div>
           </div>
         </nav>
@@ -151,7 +111,10 @@
 
       <div id="main-content" class="container mt-5 flex-grow-1">
         <div id="content-home" class="page">
-          <div class="text-center hero auth-invisible">
+          <div class="auth-visible">
+            <strong>Loading...</strong>
+          </div>
+          <div class="text-center hero hidden auth-invisible">
             <h1 class="mb-4">Account Linking Sample</h1>
 
             <p class="lead">
@@ -165,7 +128,6 @@
             <div class="row align-items-center profile-header">
               <div class="col-md-2">
                 <img
-                  alt="User's profile picture"
                   class="rounded-circle img-fluid profile-image mb-3 mb-md-0"
                 />
               </div>
@@ -183,7 +145,7 @@
         </div>
 
         <div id="linked-accounts" class="page hidden auth-visible">
-          <p><strong>Linked identities:</strong></p>
+          <p><strong>Linked accounts:</strong></p>
           <table class="table table-striped table-hover accounts">
             <thead>
               <tr>
@@ -195,20 +157,14 @@
                 <th>actions</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td colspan="6">No linked accounts yet...</td>
-              </tr>
-            </tbody>
+            <tbody></tbody>
           </table>
-
-          <button
-            id="accLinkBtn"
-            onclick="linkAccount()"
-            class="btn btn-primary btn-margin"
-          >
-            Link Account
-          </button>
+          <div>
+            <button class="btn btn-primary btn-margin btn-linkaccount">
+              Link Account
+            </button>
+          </div>
+          <div class="linking-message"></div>
         </div>
       </div>
 

@@ -55,43 +55,80 @@ const showContent = (id) => {
 
 const el = (selector) => document.querySelector(selector);
 
-const displayable = (identity) => ({
-  connection: identity.connection,
-  isSocial: identity.isSocial,
-  provider: identity.provider,
-  user_id: identity.user_id,
-  profileData: JSON.stringify(identity.profileData, null, 2),
-});
+const refreshLinkedAccounts = (profile) => {
+  const { user_id: primaryUserId, identities, email_verified, email } = profile;
 
-function showLinkedAccounts(profile) {
-  el("table.accounts tbody tr").remove();
-  const { user_id: userId, identities } = profile;
+  el("table.accounts tbody").remove();
+  const tbody = el("table.accounts").appendChild(
+    document.createElement("tbody")
+  );
 
-  const notRoot = (identity) =>
-    identity.provider !== userId.split("|")[0] ||
-    identity.user_id !== userId.split("|")[1];
-  const table = el("table.accounts");
+  const showInfoMessage = (msg) => {
+    const info = el("div.linking-message");
+    info.innerText = msg;
+  };
+
+  if (!email_verified) {
+    // don't offer linking for unverified emails.
+    showInfoMessage(
+      `The email ${email} is not verified. Account linking is only allowed for verified emails.`
+    );
+    el("button.btn-linkaccount").classList.add("hidden");
+    return;
+  }
+
+  const primary = (identity) =>
+    identity.provider !== primaryUserId.split("|")[0] ||
+    identity.user_id !== primaryUserId.split("|")[1];
+
+  const displayable = (identity) => ({
+    connection: identity.connection,
+    isSocial: identity.isSocial,
+    provider: identity.provider,
+    user_id: identity.user_id,
+    profileData: JSON.stringify(identity.profileData, null, 2),
+  });
+
   if (identities.length > 1) {
     identities
-      .filter(notRoot)
+      .filter(primary)
       .map(displayable)
       .forEach((identity) => {
-        const row = table.insertRow();
+        const row = tbody.insertRow();
         for (key in identity) {
           const cell = row.insertCell();
           cell.appendChild(document.createTextNode(identity[key]));
         }
         const actionCell = row.insertCell();
-        const btn = document.createElement("div");
-        btn.innerHTML = `<button onclick="unlinkAccount('${identity.provider}','${identity.user_id}')" class="btn btn-danger">Unlink</button>`;
-        actionCell.appendChild(btn);
+        const unlinkButton = document.createElement("button");
+        unlinkButton.className = "btn btn-danger btn-unlinkaccount";
+        unlinkButton.innerText = "Unlink";
+        unlinkButton.addEventListener("click", async () => {
+          try {
+            el("button.btn-unlinkaccount").classList.add("disabled");
+            await unlinkAccount(identity);
+            const updateProfile = await getUserProfile(primaryUserId);
+            refreshLinkedAccounts(updateProfile);
+          } finally {
+            el("button.btn-unlinkaccount").classList.remove("disabled");
+          }
+        });
+        actionCell.appendChild(unlinkButton);
       });
-  } else {
-    el("table.accounts tbody").append(
-      '<tr><td colspan="6">No linked accounts yet...</td></tr>'
-    );
   }
-}
+
+  const linkButton = el("button.btn-linkaccount");
+  linkButton.addEventListener("click", async () => {
+    try {
+      showInfoMessage("");
+      await linkAccount();
+      const updatedProfile = await getUserProfile(primaryUserId);
+      refreshLinkedAccounts(updatedProfile);
+    } catch ({ message }) {
+      showInfoMessage(message);
+    }
+  });
+};
 
 const updateUI = async () => {
   try {
@@ -100,7 +137,7 @@ const updateUI = async () => {
     if (isAuthenticated) {
       const { sub: userId, ...user } = await auth0.getUser();
       const profile = await getUserProfile(userId);
-      showLinkedAccounts(profile);
+      if (profile) refreshLinkedAccounts(profile);
 
       document.getElementById("profile-data").innerText = JSON.stringify(
         user,

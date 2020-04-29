@@ -5,19 +5,11 @@ let config = null;
 /**
  * Starts the authentication flow
  */
-const login = async (targetUrl) => {
+const login = async () => {
   try {
-    console.log("Logging in", targetUrl);
-
-    const options = {
+    await auth0.loginWithRedirect({
       redirect_uri: window.location.origin,
-    };
-
-    if (targetUrl) {
-      options.appState = { targetUrl };
-    }
-
-    await auth0.loginWithRedirect(options);
+    });
   } catch (err) {
     console.log("Log in failed", err);
   }
@@ -28,7 +20,6 @@ const login = async (targetUrl) => {
  */
 const logout = () => {
   try {
-    console.log("Logging out");
     auth0.logout({
       returnTo: window.location.origin,
     });
@@ -41,20 +32,6 @@ const logout = () => {
  * Retrieves the auth configuration from the server
  */
 const fetchAuthConfig = () => fetch("/auth_config.json");
-
-/**
- * Initializes the Auth0 client
- */
-const configureClient = async () => {
-  auth0 = await createAuth0Client({
-    domain: config.domain,
-    client_id: config.clientId,
-    audience: `https://${config.domain}/api/v2/`,
-    cacheLocation: "localstorage",
-    scope:
-      "openid email profile read:current_user update:current_user_identities",
-  });
-};
 
 /**
  * Checks to see if the user is authenticated. If so, `fn` is executed. Otherwise, the user
@@ -71,56 +48,87 @@ const requireAuth = async (fn, targetUrl) => {
   return login(targetUrl);
 };
 
-const linkAccount = async (targetUserIdToken) => {
-  try {
-    const token = await auth0.getTokenSilently();
+const authenticateUser = async () => {
+  const a0 = new Auth0Client({
+    domain: config.domain,
+    client_id: config.clientId,
+  });
+  await a0.loginWithPopup({
+    max_age: 0,
+    scope: "openid",
+  });
+  return await a0.getIdTokenClaims();
+};
 
-    const response = await fetch(
-      `https://${config.domain}/api/v2/users/${uid}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          link_with: targetUserIdToken,
-        }),
-      }
+const linkAccount = async () => {
+  const accessToken = await auth0.getTokenSilently();
+  const { sub } = await auth0.getUser();
+  const {
+    __raw: targetUserIdToken,
+    email_verified,
+    email,
+  } = await authenticateUser();
+
+  if (!email_verified) {
+    throw new Error(
+      `Account linking is only allowed to verified account. Please verify your email ${email}.`
     );
-
-    const responseData = await response.json();
-    const json = JSON.stringify(responseData, {}, 2);
-    console.log(json);
-  } catch (e) {
-    console.error(e);
   }
+
+  await fetch(`https://${config.domain}/api/v2/users/${sub}/identities`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      link_with: targetUserIdToken,
+    }),
+  });
+};
+
+const unlinkAccount = async (secondaryIdentity) => {
+  const { provider, user_id } = secondaryIdentity;
+  const accessToken = await auth0.getTokenSilently();
+  const { sub } = await auth0.getUser();
+  await fetch(
+    `https://${config.domain}/api/v2/users/${sub}/identities/${provider}/${user_id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
 };
 
 const getUserProfile = async (userId) => {
-  try {
-    const token = await auth0.getTokenSilently();
-
-    const response = await fetch(
-      `https://${config.domain}/api/v2/users/${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return await response.json();
-  } catch (e) {
-    console.error(e);
-  }
+  const token = await auth0.getTokenSilently();
+  const response = await fetch(
+    `https://${config.domain}/api/v2/users/${userId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return await response.json();
 };
 
 // Will run when page finishes loading
 window.onload = async () => {
   const response = await fetchAuthConfig();
   config = await response.json();
-
-  await configureClient();
+  auth0 = new Auth0Client({
+    domain: config.domain,
+    client_id: config.clientId,
+    audience: `https://${config.domain}/api/v2/`,
+    scope:
+      "openid email profile read:current_user update:current_user_identities",
+  });
+  try {
+    await auth0.getTokenSilently();
+  } catch {}
 
   // If unable to parse the history hash, default to the root URL
   if (!showContentFromUrl(window.location.pathname)) {
