@@ -53,10 +53,10 @@ const showContent = (id) => {
   document.getElementById(id).classList.remove("hidden");
 };
 
-const el = (selector) => document.querySelector(selector);
-
-const refreshLinkedAccounts = (profile) => {
+const refreshLinkedAccounts = (profile, supressEventSubscription = false) => {
   const { user_id: primaryUserId, identities, email_verified, email } = profile;
+
+  const el = (selector) => document.querySelector(selector);
 
   el("table.accounts tbody").remove();
   const tbody = el("table.accounts").appendChild(
@@ -89,6 +89,11 @@ const refreshLinkedAccounts = (profile) => {
     profileData: JSON.stringify(identity.profileData, null, 2),
   });
 
+  const refresh = async () => {
+    showInfoMessage("");
+    const updatedProfile = await getUserProfile(primaryUserId);
+    refreshLinkedAccounts(updatedProfile, true);
+  };
   if (identities.length > 1) {
     identities
       .filter(primary)
@@ -103,27 +108,24 @@ const refreshLinkedAccounts = (profile) => {
         const unlinkButton = document.createElement("button");
         unlinkButton.className = "btn btn-danger btn-unlinkaccount";
         unlinkButton.innerText = "Unlink";
-        unlinkButton.addEventListener("click", async () => {
+        actionCell.appendChild(unlinkButton);
+        unlinkButton.addEventListener("click", async ({ target }) => {
           try {
-            el("button.btn-unlinkaccount").classList.add("disabled");
+            target.classList.add("disabled");
             await unlinkAccount(identity);
-            const updateProfile = await getUserProfile(primaryUserId);
-            refreshLinkedAccounts(updateProfile);
+            refresh();
           } finally {
-            el("button.btn-unlinkaccount").classList.remove("disabled");
+            target.classList.remove("disabled");
           }
         });
-        actionCell.appendChild(unlinkButton);
       });
   }
-
+  if (supressEventSubscription) return;
   const linkButton = el("button.btn-linkaccount");
   linkButton.addEventListener("click", async () => {
     try {
-      showInfoMessage("");
       await linkAccount();
-      const updatedProfile = await getUserProfile(primaryUserId);
-      refreshLinkedAccounts(updatedProfile);
+      refresh();
     } catch ({ message }) {
       showInfoMessage(message);
     }

@@ -71,7 +71,7 @@ const linkAccount = async () => {
 
   if (!email_verified) {
     throw new Error(
-      `Account linking is only allowed to verified account. Please verify your email ${email}.`
+      `Account linking is only allowed to a verified account. Please verify your email ${email}.`
     );
   }
 
