@@ -2,9 +2,7 @@
 
 This Single Page App serves as an example of the [User Initiated Account Linking Scenario](https://auth0.com/docs/link-accounts/user-initiated), where the user can click on a **Link Account** button and login with other identity to link to.
 
-```
-For security reasons, the user performing the account linking and the account being linked must both email_verified set to true. The sample will enforce this constrain during account linking.
-```
+**For security reasons, the user performing the account linking and the account being linked must both email_verified set to true. The sample will enforce this constrain during account linking.**
 
 ## Key Features
 
