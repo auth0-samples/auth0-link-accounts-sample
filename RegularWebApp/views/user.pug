@@ -1,0 +1,92 @@
+extends user-layout
+
+mixin suggestedUserMixin(user)
+  tr(data-id=user.user_id)
+    td=user.user_id
+    td=user.name
+    td 
+      if (user.picture)
+        img.profile-image(src=user.picture)
+    td=JSON.stringify(user.user_metadata, null, 2)
+    td=JSON.stringify(user.app_metadata, null, 2) 
+    td
+      form(action="/link" method="post")
+        input(type="hidden" name="userid" value=user.user_id)
+        input(type="hidden" name="email" value=user.email)
+        input(type="hidden" name="connection" value=user.identities[0].connection)
+        button.btn.btn-success.btn-xs.unlink link
+
+mixin identityMixin(identity)
+  tr(data-id=identity.user_id)
+    td=identity.provider
+    td=identity.user_id
+    td=identity.connection
+    td 
+      if (identity.profileData && identity.profileData.picture)
+        img.profile-image(src=identity.profileData && identity.profileData.picture)
+    td 
+      pre=JSON.stringify(identity.profileData,null,2)
+    td
+      form(method='POST' action='/link/delete')
+        input#provider(type='hidden' name='provider' value=identity.provider)
+        input#user_id(type='hidden' name='userId' value=identity.user_id)
+        button.btn.btn-danger.btn-xs.unlink(type='submit') unlink 
+
+block content
+
+  .panel.panel-default
+    .panel-heading 
+      img.img-circle.profile-image(src=`${user.picture}`) 
+      |Root Profile 
+    .panel-body
+      dl.dl-horizontal
+        dt email
+        dd #{user.email} &nbsp;
+          if (user.email_verified)
+            span.label.label-success verified
+          else
+            span.label.label-danger not verified
+        dt raw profile
+        dd
+          pre.profile=JSON.stringify(user,null,2)
+
+  if (suggestedUsers.length > 0 )
+    .panel.panel-default
+      .panel-heading Accounts with the same email address
+      .panel-body
+        p We noticed there are other registered users with same verified e-mail address: #[strong=user.email]. Do you want to link the accounts and merge its metadata?
+        table.table.table-condensed
+          thead
+            tr
+              th user_id
+              th name
+              th picture
+              th user_metadata
+              th app_metadata
+              th actions
+          tbody#suggested-users
+            each user in suggestedUsers
+              +suggestedUserMixin(user)
+
+  .panel.panel-default
+    .panel-heading Linked Accounts
+    if (user.identities.length > 1)
+      table.table.identities
+        thead
+          tr
+            th provider
+            th id
+            th connection
+            th(style='width:5%')
+            th profileData
+            th actions
+        tbody
+        each identity in user.identities
+          if (identity.provider !== user.user_id.split('|')[0] && identity.user_id !== user.user_id.split('|')[1])
+            +identityMixin(identity)
+    else
+      .panel-body
+        if (wrongAccountError)
+          strong Skipping account linking as authenticated user is different from target linking user.
+        else
+          p You don't have any accounts linked.

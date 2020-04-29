@@ -1,0 +1,9 @@
+extends layout
+
+block content
+
+  h1= title
+  p Welcome to #{title}
+  br
+  form(method='GET' action='/login')
+    button.btn.btn-primary(type="submit") Login

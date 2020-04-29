@@ -2,6 +2,9 @@
 logs
 *.log
 
+.DS_Store
+.vscode
+
 # Runtime data
 pids
 *.pid
@@ -28,6 +31,7 @@ node_modules
 
 # Config and data.
 config.json
+auth_config.json
 data.json
 dist
 SuggestLinking/.env

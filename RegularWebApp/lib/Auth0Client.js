@@ -1,149 +1,106 @@
-'use strict';
-
-const request = require('request');
+"use strict";
+const debug = require("debug")("auth0-link-accounts-sample");
+const rp = require("request-promise-native");
 
 class Auth0Client {
+  constructor() {
+    this.mgmtApiToken = "";
+  }
 
-	getUser(userId){
-		return new Promise((resolve,reject) => {
-			const reqOpts = {
-				url:`https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`,
-				headers: {
-					'Authorization': `Bearer ${process.env.AUTH0_APIV2_TOKEN}`
-				}
-			};
-			console.log('reqOpts - getUser',reqOpts);
-			request(reqOpts, (error, response, body) => {
-				if (error) {
-					return reject(error);
-				} else if (response.statusCode !== 200) {
-					return reject(`Error getting user with id ${userId}. Status code: ${response.statusCode}. Body: ${body}`);
-				} else {
-					resolve(JSON.parse(body));
-				}
-			});	
-		});
-	}
+  async getToken() {
+    if (this.mgmtApiToken) return this.mgmtApiToken;
+    const opts = {
+      method: "POST",
+      uri: `${process.env.ISSUER_BASE_URL}/oauth/token`,
+      json: {
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET,
+        grant_type: "client_credentials",
+        audience: `${process.env.ISSUER_BASE_URL}/api/v2/`,
+      },
+    };
+    debug("getting mgmt api access_token...");
+    const { access_token } = await rp(opts);
+    debug("access_token recieved...");
 
-	getUsersWithSameVerifiedEmail(user) {
-		console.log('getUsersWithSameVerifiedEmail - user',user);
-		return new Promise((resolve, reject) => {
-			if (! user.email_verified){
-				reject(`User's email ${user.email} is not verified`);
-			}
-			const reqOpts = {
-				url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
-				headers: {
-					'Authorization': `Bearer ${process.env.AUTH0_APIV2_TOKEN}`
-				},
-				qs: {
-			    search_engine: 'v2',
-			    q: `email:"${user.email}" AND email_verified:true -user_id:"${user.sub}"`
-			  }
-			};
-			console.log('reqOpts - getUsersWithSameVerifiedEmail',reqOpts);
-			request(reqOpts, (error, response, body) => {
-				console.log('getUsersWithSameVerifiedEmail err, status, body',error,response.statusCode,body);
-				if (error) {
-					return reject(error);
-				} else if (response.statusCode !== 200) {
-					return reject(`Error getting users with same email. Status code: ${response.statusCode}. Body: ${body}`);
-				} else {
-					resolve(JSON.parse(body));
-				}	
-			});
-		});
-	}
+    this.mgmtApiToken = access_token;
+    return this.mgmtApiToken;
+  }
 
-	/*
-	* Links Accounts
-	* Links targetUserId account to rootUserId account  
-	*
-	* Example:
-	*
-	*  Auth0Client.linkAccounts('google-oauth2%7C115015401343387192604','sms|560ebaeef609ee1adaa7c551')
-	*  .then( identities => {
-  *    // use new user's array of identities
-  *  })
-  *  .catch( err => {
-  *    // handle error
-  *  });
-	*  
-	* @param {String} rootUserId
-  * @param {String} targetUserId
-  * @api public
-	*/
-	linkAccounts(rootUserId,targetUserId) {
+  async request(options) {
+    const token = await this.getToken();
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
 
-		const provider = targetUserId.split('|')[0];
-		const user_id = targetUserId.split('|')[1];
+    const opts = { ...options, headers };
+    const body = await rp(opts);
+    try {
+      return JSON.parse(body);
+    } catch (err) {
+      debug("body parsing failed, returning unparsed body %o", body);
+      return body;
+    }
+  }
 
-		return new Promise((resolve, reject) => {
-			var reqOpts = {
-				method: 'POST',
-				url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${rootUserId}/identities`,
-				headers: {
-					'Authorization': `Bearer ${process.env.AUTH0_APIV2_TOKEN}`
-				},
-				json: {
-		      provider,
-		      user_id
-		    }
-		  };
-		  console.log('reqOpt-linkAccounts',reqOpts);
-			
-		  request(reqOpts,(error, response, body) => {
-				if (error) {
-					return reject(error);
-				} else if (response.statusCode !== 201) {
-					return reject(`Error linking accounts. Status code: ${response.statusCode}. Body: ${JSON.stringify(body)}`);
-				} else {
-					resolve(body);
-				}	
-			});
-		});
-	}
+  async getUser(userId) {
+    debug("getting user profile for *%s* from mgmt api...", userId);
+    return await this.request({
+      url: `${process.env.ISSUER_BASE_URL}/api/v2/users/${userId}`,
+    });
+  }
 
-	/*
-	* Unlinks Accounts
-	* Unlinks targetUserId account from rootUserId account  
-	*
-	* Example:
-	*
-	*  Auth0Client.unlinkAccounts('google-oauth2%7C115015401343387192604','sms','560ebaeef609ee1adaa7c551')
-	*  .then( identities => {
-  *    // use new user's array of identities
-  *  })
-  *  .catch( err => {
-  *    // handle error
-  *  });
-	*  
-	* @param {String} rootUserId
-	* @param {String} targetUserProvider
-  * @param {String} targetUserId
-  * @api public
-	*/
-	unlinkAccounts(rootUserId, targetUserProvider, targetUserId){
-		return new Promise((resolve,reject) => {
-			var reqOpts = {
-				method: 'DELETE',
-				url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${rootUserId}/identities/${targetUserProvider}/${targetUserId}`,
-				headers: {
-					'Authorization': `Bearer ${process.env.AUTH0_APIV2_TOKEN}`
-				}
-			};
-			console.log('reqOpts - unlinkAccounts',reqOpts);
-			request(reqOpts,(error, response, body) => {
-				if (error) {
-					return reject(error);
-				} else if (response.statusCode !== 200) {
-					return reject(`Error unlinking accounts. Status code: ${response.statusCode}. Body: ${JSON.stringify(body)}`);
-				} else {
-					resolve(JSON.parse(body));
-				}	
-			});
-		});
-	}
+  async updateUser(userId, payload) {
+    debug("updating %s with payload %o...", userId, payload);
+    return await this.request({
+      method: "PATCH",
+      url: `${process.env.ISSUER_BASE_URL}/api/v2/users/${userId}`,
+      json: payload,
+    });
+  }
+
+  async getUsersWithSameVerifiedEmail({ sub, email }) {
+    debug("searching maching users with email *%s* ...", email);
+    return await this.request({
+      url: `${process.env.ISSUER_BASE_URL}/api/v2/users`,
+      qs: {
+        search_engine: "v3",
+        q: `email:"${email}" AND email_verified:true -user_id:"${sub}"`,
+      },
+    });
+  }
+
+  async linkAccounts(rootUserId, targetUserIdToken) {
+    debug("linking...");
+    return await this.request({
+      url: `${process.env.ISSUER_BASE_URL}/api/v2/users/${rootUserId}/identities`,
+      method: "POST",
+      json: {
+        link_with: targetUserIdToken,
+      },
+    });
+  }
+
+  /*
+   * Unlinks Accounts
+   * Unlinks targetUserId account from rootUserId account
+   *
+   * Example:
+   *
+   *  await auth0Client.unlinkAccounts('google-oauth2%7C115015401343387192604','sms','560ebaeef609ee1adaa7c551')
+   *
+   * @param {String} rootUserId
+   * @param {String} targetUserProvider
+   * @param {String} targetUserId
+   * @api public
+   */
+  async unlinkAccounts(rootUserId, targetUserProvider, targetUserId) {
+    debug("Unlinking %s from %s ...", targetUserId, rootUserId);
+    return await this.request({
+      method: "DELETE",
+      url: `${process.env.ISSUER_BASE_URL}/api/v2/users/${rootUserId}/identities/${targetUserProvider}/${targetUserId}`,
+    });
+  }
 }
 
 module.exports = new Auth0Client();
