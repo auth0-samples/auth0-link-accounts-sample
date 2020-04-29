@@ -13,6 +13,8 @@ For security reasons, the user performing the account linking and the account be
 - Option to unlink an account
 - Option to link another account
 
+![](pngs/spa-account-linking.png)
+
 ## Install Locally
 
 1. Make a copy of `auth_config.json.example` and rename it to `auth_config.json`. Then open it in a text editor and supply the client_id and domain values for your application. You can get the client_id and domain from the [Auth0 Dashboard](https://manage.auth0.com).
