@@ -12,6 +12,13 @@ This Node.js Regular Web App serves as an example of the [Suggested Account Link
 - Display of current profile and linked accounts
 - Option to unlink an account
 
+**Note: Passwordless authentication doesn't work with `connection` parameter so the sample removes connection parameter when passwordless connection is used.**
+
+```javascript
+if (["email", "sms"].includes(authorizationParams.connection))
+  delete authorizationParams.connection;
+```
+
 ![](pngs/regular-web-app-suggest-linking.png)
 
 ![](pngs/regular-web-app-user-settings.png)
@@ -25,7 +32,7 @@ This Node.js Regular Web App serves as an example of the [Suggested Account Link
 5. [Grant "read:users update:users"](#management-api-scopes) scopes to your "Regular Web App".
 6. Make sure you have at least two enabled econnections where you can login with the same email. A Database and a Social provide a good simple testing setup.
 7. Run: `npm install` and `npm run start`
-8. Go to `http://localhost:3000` and you'll see the app running :).
+8. Go to `http://localhost:3000` and you'll see the app running.
 
 ## Debugging
 

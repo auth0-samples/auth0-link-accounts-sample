@@ -5,9 +5,5 @@ block content
   h1= title
   p Welcome to #{title}
   br
-  if (user)
-    p See your 
-      a(href='/user') profile
-  else
-    form(method='GET' action='/login')
-      button.btn.btn-primary(type="submit") Login
+  form(method='GET' action='/login')
+    button.btn.btn-primary(type="submit") Login

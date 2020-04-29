@@ -17,14 +17,18 @@ router.post("/", (req, res) => {
   // save userid in session.
   req.appSession.linking = { targetUserId: userid };
 
+  const authorizationParams = {
+    max_age: 0,
+    login_hint: email,
+    connection: connection,
+  };
+  // Passwordless connection doesn't work with connection param.
+  if (["email", "sms"].includes(authorizationParams.connection))
+    delete authorizationParams.connection;
   // [re]-authenticate target account before account linking
   res.openid.login({
     returnTo: "/user",
-    authorizationParams: {
-      max_age: 0,
-      login_hint: email,
-      connection: connection,
-    },
+    authorizationParams,
   });
 });
 
