@@ -1,112 +1,186 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html class="h-100">
   <head>
-    <meta charset="utf-8">
-    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script src="https://cdn.auth0.com/js/lock/11.2/lock.min.js"></script>
-    <script src="https://cdn.auth0.com/js/auth0/9.2/auth0.min.js"></script>
-    
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script src="//use.typekit.net/iws6ohy.js"></script>
-    <script>try{Typekit.load();}catch(e){}</script>
+    <meta charset="UTF-8" />
+    <title>Account Linking Sample</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/monokai-sublime.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.2/css/solid.css"
+      integrity="sha384-r/k8YTFqmlOaqRkZuSiE9trsrDXkh07mRaoGBMoDcmA58OHILZPsk29i2BsFng1B"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.2/css/fontawesome.css"
+      integrity="sha384-4aon80D8rXCGx9ayDt85LbyUHeMWd3UiBaWliBlJ53yzm9hqN21A+o1pqoyK04h+"
+      crossorigin="anonymous"
+    />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- font awesome from BootstrapCDN -->
-    <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.5/paper/bootstrap.min.css" rel="stylesheet">
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-
-    <script src="auth0-variables.js"> </script>
-    <script src="app.js"> </script>
-    <link href="app.css" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://cdn.auth0.com/js/auth0-samples-theme/1.0/css/auth0-theme.min.css"
+    />
   </head>
-  <body class="home">
-    <div class="container">
-      <div class="login-page clearfix">
-        <div class="login-box auth0-box before">
-          <img class="auth0logo" src="auth0_logo_final_blue_RGB.png" style="margin-top:20px;"/>
-          <h3>Linking Accounts SPA Sample</h3>
-          <p>Zero friction identity infrastructure, built for developers</p>
-          <button onclick="login()" class="btn btn-primary btn-lg">SignIn</button>
-          <button onclick="loginPasswordlessSMS()" class="btn btn-primary btn-lg">One Time Code Login via SMS</button>          
-          <button onclick="loginPasswordlessEmailCode()" class="btn btn-primary btn-lg">One Time Code Login via Email</button>        
-        </div>
-      </div>
-    </div>
-    <div class="container logged-in-box" style="display: none;">
-      <div class="bs-component">
-        <nav class="navbar navbar-inverse">
-          <div class="container-fluid">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="#"><img class="auth0logo" src="auth0_logo_final_blue_RGB.png" /></a>
-            </div>
 
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
-              <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="nickname"></span> <span class="caret"></span></a>
-                  <ul class="dropdown-menu" role="menu">
-                    <li><a href="javascript:logout()">Logout</a></li>
-                  </ul>
+  <body class="h-100">
+    <div id="app" class="h-100 d-flex flex-column">
+      <div class="nav-container">
+        <nav class="navbar navbar-expand-md navbar-light bg-light">
+          <div class="container">
+            <div class="navbar-brand logo"></div>
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-toggle="collapse"
+              data-target="#navbarNav"
+              aria-controls="navbarNav"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                  <a href="/" class="nav-link route-link">Home</a>
                 </li>
+              </ul>
+              <ul class="navbar-nav d-none d-md-block">
+                <!-- Login button: show if NOT authenticated -->
+                <li class="nav-item auth-invisible">
+                  <button
+                    id="qsLoginBtn"
+                    onclick="login()"
+                    class="btn btn-primary btn-margin auth-invisible hidden"
+                  >
+                    Log in
+                  </button>
+                </li>
+                <!-- / Login button -->
+
+                <!-- Fullsize dropdown: show if authenticated -->
+                <li class="nav-item dropdown auth-visible hidden">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="profileDropDown"
+                    data-toggle="dropdown"
+                  >
+                    <!-- Profile image should be set to the profile picture from the id token -->
+                    <img
+                      alt="Profile picture"
+                      class="nav-user-profile profile-image rounded-circle"
+                      width="50"
+                    />
+                  </a>
+                  <div class="dropdown-menu">
+                    <!-- Show the user's full name from the id token here -->
+                    <div class="dropdown-header nav-user-name user-name"></div>
+                    <a
+                      href="/profile"
+                      class="dropdown-item dropdown-profile route-link"
+                    >
+                      <i class="fas fa-user mr-3"></i> Profile
+                    </a>
+                    <a
+                      href="#"
+                      class="dropdown-item"
+                      id="qsLogoutBtn"
+                      onclick="logout()"
+                    >
+                      <i class="fas fa-power-off mr-3"></i> Log out
+                    </a>
+                  </div>
+                </li>
+                <!-- /Fullsize dropdown -->
               </ul>
             </div>
           </div>
         </nav>
-        <h3>Welcome <span class="nickname"></span>!!</h3> 
-        <div class="panel panel-primary">
-          <div class="panel-heading">Your profile:</div>
-          <pre class=" profile"></pre>
+      </div>
+
+      <div id="main-content" class="container mt-5 flex-grow-1">
+        <div id="content-home" class="page">
+          <div class="auth-visible">
+            <strong>Loading...</strong>
+          </div>
+          <div class="text-center hero hidden auth-invisible">
+            <h1 class="mb-4">Account Linking Sample</h1>
+
+            <p class="lead">
+              Please login to continue
+            </p>
+          </div>
         </div>
-        <div class="panel panel-primary">
-          <div class="panel-heading">Linked Accounts:</div>
-          <table class="table table-striped table-hover accounts">
-            <thead>
-              <tr>
-                <th>connection</th>
-                <th>isSocial</th>
-                <th>provider</th>
-                <th>user_id</th>
-                <th>profileData</th>
-                <th>actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="6">No linked accounts yet...</td></tr>
-            </tbody>
-          </table>
-          <div class="panel-footer">
-            <div class="row">
-              <div class="col-md-5">
-                <h5>Link Passwordless</h5>
-                <div class="btn-group">
-                  <button onclick="linkPasswordlessSMS()" class="btn btn-warning"><i class="fa fa-phone"></i> SMS</button>
-                  <button onclick="linkPasswordlessEmailCode()" class="btn btn-warning"><i class="fa fa-envelope"></i> Email  Code</button>  
-                  <button onclick="linkPasswordlessEmailLink()" class="btn btn-warning"><i class="fa fa-envelope"></i> Magic Link</button>
-                </div>
-              </div>
-              <div class="col-md-5">
-                <h5>Link Social</h5>
-                <div class="btn-group">
-                  <button onclick="linkPasswordAccount('facebook')" class="text-left btn btn-primary"><i class="fa fa-facebook-square"></i> Facebook</button>
-                  <button onclick="linkPasswordAccount('twitter')" class="text-left btn btn-primary"><i class="fa fa-twitter-square"></i> Twitter</button>
-                  <button onclick="linkPasswordAccount('linkedin')" class="text-left btn btn-primary"><i class="fa fa-linkedin-square"></i> LinkedIn</button>
-                </div>
-              </div>
+
+        <div id="content-profile" class="page hidden auth-visible">
+          <div class="container">
+            <div class="row align-items-center profile-header">
               <div class="col-md-2">
-                <h5>Link Any</h5>
-                <button onclick="linkPasswordAccount()" class="btn btn-success"><i class="fa fa-link"></i> Link Account</button>
+                <img
+                  class="rounded-circle img-fluid profile-image mb-3 mb-md-0"
+                />
+              </div>
+              <div class="col-md">
+                <h2 class="user-name"></h2>
+                <p class="lead text-muted user-email"></p>
               </div>
             </div>
-          </div>      
+
+            <div class="row">
+              <pre class="rounded">
+                <code id="profile-data" class="json"></code></pre>
+            </div>
+          </div>
+          <div id="linked-accounts">
+            <p><strong>Linked accounts:</strong></p>
+            <table class="table table-striped table-hover accounts">
+              <thead>
+                <tr>
+                  <th>connection</th>
+                  <th>isSocial</th>
+                  <th>provider</th>
+                  <th>user_id</th>
+                  <th>profileData</th>
+                  <th>actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div>
+              <button class="btn btn-primary btn-margin btn-linkaccount">
+                Link Account
+              </button>
+            </div>
+            <div class="linking-message"></div>
+          </div>
         </div>
       </div>
+
+      <footer class="bg-light text-center p-5">
+        <div class="logo"></div>
+        <p>
+          Account Linking Sample provided by
+          <a href="https://auth0.com">Auth0</a>
+        </p>
+      </footer>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/1.7/auth0-spa-js.production.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>
