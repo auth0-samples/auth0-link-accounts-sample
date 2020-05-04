@@ -1,4 +1,4 @@
 {
-  "domain": "{tenant}.au.auth0.com",
+  "domain": "{tenant}.auth0.com",
   "clientId": "CLIENT_ID"
 }
