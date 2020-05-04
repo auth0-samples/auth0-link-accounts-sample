@@ -54,7 +54,12 @@ const showContent = (id) => {
 };
 
 const refreshLinkedAccounts = (profile, supressEventSubscription = false) => {
-  const { user_id: primaryUserId, identities, email_verified, email } = profile;
+  const {
+    user_id: primaryUserId,
+    identities,
+    email_verified,
+    email = "",
+  } = profile;
 
   const el = (selector) => document.querySelector(selector);
 
@@ -135,23 +140,36 @@ const refreshLinkedAccounts = (profile, supressEventSubscription = false) => {
 const updateUI = async () => {
   try {
     const isAuthenticated = await auth0.isAuthenticated();
-
     if (isAuthenticated) {
       const { sub: userId, ...user } = await auth0.getUser();
       const profile = await getUserProfile(userId);
       if (profile) refreshLinkedAccounts(profile);
 
+      // extract provider/user_id from primary identity
+      const primaryIdentity =
+        profile &&
+        profile.identities &&
+        profile.identities.find(
+          (id) => `${id.provider}|${id.user_id}` === userId
+        );
+
       document.getElementById("profile-data").innerText = JSON.stringify(
-        user,
+        { ...primaryIdentity, ...user },
         null,
         2
       );
 
       document.querySelectorAll("pre code").forEach(hljs.highlightBlock);
 
-      eachElement(".profile-image", (e) => (e.src = user.picture));
-      eachElement(".user-name", (e) => (e.innerText = user.name));
-      eachElement(".user-email", (e) => (e.innerText = user.email));
+      const { connection: primaryConnection = "" } = primaryIdentity;
+      const { name = "", picture, email = "" } = user;
+      eachElement(".profile-image", (e) => (e.src = picture));
+      eachElement(".user-name", (e) => (e.innerText = name));
+
+      eachElement(
+        ".user-email",
+        (e) => (e.innerText = `${email}(${primaryConnection})`)
+      );
       eachElement(".auth-invisible", (e) => e.classList.add("hidden"));
       eachElement(".auth-visible", (e) => e.classList.remove("hidden"));
     } else {
@@ -162,8 +180,6 @@ const updateUI = async () => {
     console.log("Error updating UI!", err);
     return;
   }
-
-  console.log("UI updated");
 };
 
 window.onpopstate = (e) => {
