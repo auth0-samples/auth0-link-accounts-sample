@@ -126,47 +126,48 @@ window.onload = async () => {
     scope:
       "openid email profile read:current_user update:current_user_identities",
   });
-  try {
-    await auth0.getTokenSilently();
-  } catch {}
-
-  // If unable to parse the history hash, default to the root URL
-  if (!showContentFromUrl(window.location.pathname)) {
-    showContentFromUrl("/");
-    window.history.replaceState({ url: "/" }, {}, "/");
-  }
-
-  const isAuthenticated = await auth0.isAuthenticated();
-
-  if (isAuthenticated) {
-    console.log("> User is authenticated");
-    window.history.replaceState({}, document.title, window.location.pathname);
-    updateUI();
-    showContentFromUrl("/profile");
-    return;
-  }
-
-  console.log("> User not authenticated");
 
   const query = window.location.search;
   const shouldParseResult = query.includes("code=") && query.includes("state=");
-
   if (shouldParseResult) {
-    console.log("> Parsing redirect");
     try {
       const result = await auth0.handleRedirectCallback();
 
       if (result.appState && result.appState.targetUrl) {
         showContentFromUrl(result.appState.targetUrl);
+        window.history.replaceState(
+          {},
+          document.title,
+          result.appState.targetUrl
+        );
       }
 
-      console.log("Logged in!");
+      //check silent authentication
+      try {
+        await auth0.getTokenSilently({ ignoreCache: true });
+      } catch ({ error }) {
+        if (error === "login_required") {
+          console.warn(`Silent authentication failed with *login_required* error. This is possibly due to 3rd party cookies blocked in the browser. 
+          Considering using a custom domain or refresh_token mode of the SDK. https://github.com/auth0/auth0-spa-js#refresh-token-fallback`);
+        }
+      }
     } catch (err) {
       console.log("Error parsing redirect:", err);
     }
-
-    window.history.replaceState({}, document.title, "/");
   }
 
-  updateUI();
+  try {
+    await auth0.getTokenSilently();
+  } catch {}
+
+  await updateUI();
+
+  const isAuthenticated = await auth0.isAuthenticated();
+  if (isAuthenticated) {
+    window.history.replaceState({ url: "/profile" }, {}, "/profile");
+    showContentFromUrl("/profile");
+  } else {
+    window.history.replaceState({ url: "/" }, {}, "/");
+    showContentFromUrl("/");
+  }
 };

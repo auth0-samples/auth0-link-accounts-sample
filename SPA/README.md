@@ -2,7 +2,16 @@
 
 This Single Page App serves as an example of the [User Initiated Account Linking Scenario](https://auth0.com/docs/link-accounts/user-initiated), where the user can click on a **Link Account** button and login with other identity to link to.
 
-**For security reasons, the user performing the account linking and the account being linked must both email_verified set to true. The sample will enforce this constrain during account linking.**
+The sample use the [default iframe implementation](https://auth0.com/docs/api-auth/tutorials/silent-authentication#renew-expired-tokens) of auth0-spa-js for silent authentication, which requires 3rd party cookies to be enabled. The following warning message will be logged if 3rd party cookies are disabled.
+
+```
+Silent authentication failed with *login_required* error. This is possibly due to 3rd party cookies blocked in the browser.
+Considering using a custom domain or refresh_token mode of the SDK.
+```
+
+You can switch to use a [custom domain](https://auth0.com/docs/custom-domains) or [rotating refresh_token](https://github.com/auth0/auth0-spa-js#refresh-tokens) option of the SDK if 3rd parties are disabled in your environment.
+
+**For security reasons, the user performing the account linking and the account being linked must both have email_verified set to true. The sample will enforce this constrain during account linking.**
 
 ## Key Features
 
