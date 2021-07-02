@@ -18,9 +18,6 @@ app.use(
   auth({
     required: false,
     routes: false, // disable default /login /logout routes.
-    appSession: {
-      cookieSameSite: "None",
-    },
     auth0Logout: true,
     httpOptions: {
       timeout: 10000,
