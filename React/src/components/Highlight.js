@@ -1,15 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from 'react';
 
-import hljs from "highlight.js";
-import "highlight.js/styles/monokai-sublime.css";
+import hljs from 'highlight.js';
+import 'highlight.js/styles/monokai-sublime.css';
 
 const Highlight = (props) => {
   const { text, language = 'json' } = props;
 
   const codeNode = useRef(null);
   useEffect(() => {
-    hljs.highlightElement(codeNode.current)
-  }, [ text ]);
+    hljs.highlightElement(codeNode.current);
+  }, [text]);
 
   return (
     <pre className="rounded">
@@ -17,8 +17,7 @@ const Highlight = (props) => {
         {text}
       </code>
     </pre>
-  )
+  );
 };
-
 
 export default Highlight;

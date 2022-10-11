@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { NavLink as RouterNavLink } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useState } from 'react';
+import { NavLink as RouterNavLink } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import {
   Collapse,
@@ -16,18 +16,13 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-} from "reactstrap";
+} from 'reactstrap';
 
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0 } from '@auth0/auth0-react';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const {
-    user,
-    isAuthenticated,
-    loginWithRedirect,
-    logout,
-  } = useAuth0();
+  const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const toggle = () => setIsOpen(!isOpen);
 
   const logoutWithRedirect = () =>
@@ -37,19 +32,14 @@ const NavBar = () => {
 
   return (
     <div className="nav-container">
-      <Navbar color="light" light expand="md" full={false} container={false}>
+      <Navbar color="light" light expand="md" container={false}>
         <Container>
           <NavbarBrand className="logo" />
           <NavbarToggler onClick={toggle} />
           <Collapse isOpen={isOpen} navbar>
             <Nav className="me-auto nav-fill" navbar>
               <NavItem>
-                <NavLink
-                  tag={RouterNavLink}
-                  to="/"
-                  end
-                  activeClassName="router-link-exact-active"
-                >
+                <NavLink tag={RouterNavLink} to="/" end>
                   Home
                 </NavLink>
               </NavItem>
@@ -83,7 +73,6 @@ const NavBar = () => {
                       tag={RouterNavLink}
                       to="/profile"
                       className="dropdown-profile"
-                      activeClassName="router-link-exact-active"
                     >
                       <FontAwesomeIcon icon="user" className="me-3" /> Profile
                     </DropdownItem>
@@ -131,12 +120,7 @@ const NavBar = () => {
                 </NavItem>
                 <NavItem>
                   <FontAwesomeIcon icon="user" className="me-3" />
-                  <RouterNavLink
-                    to="/profile"
-                    activeClassName="router-link-exact-active"
-                  >
-                    Profile
-                  </RouterNavLink>
+                  <RouterNavLink to="/profile">Profile</RouterNavLink>
                 </NavItem>
                 <NavItem>
                   <FontAwesomeIcon icon="power-off" className="me-3" />
