@@ -8,7 +8,14 @@ const { Errors, clear } = require("../flashErrors");
 
 /* GET user profile. */
 router.get("/", async (req, res) => {
-  const { sub, email_verified } = req.openid.user;
+
+  // Clear up linking cookie as we don't need it here
+  res.clearCookie('linker', { path: '/' });
+  if (req.appSession.error) {
+    err = req.appSession.error;
+    res.render("error", err);
+  }
+  const { sub, email_verified } = req.oidc.user;
   //fetch user profile containing the user_metadata and app_metadata properties
   try {
     let getUsersWithSameVerifiedEmail = [];
@@ -16,7 +23,7 @@ router.get("/", async (req, res) => {
     if (email_verified)
       // account linking is only offered verified email
       getUsersWithSameVerifiedEmail = auth0Client.getUsersWithSameVerifiedEmail(
-        req.openid.user
+        req.oidc.user
       );
 
     const [user, suggestedUsers] = await Promise.all([
