@@ -9,18 +9,18 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "body-parser": "1.19.0",
+    "body-parser": "^1.20.2",
     "cookie-parser": "1.4.5",
     "debug": "4.1.1",
     "dotenv": "^1.2.0",
-    "express": "4.17.1",
-    "express-openid-connect": "2.7.1",
+    "express": "^4.18.2",
+    "express-openid-connect": "^2.13.0",
     "jwt-decode": "3.1.2",
-    "lodash": "4.17.15",
+    "lodash": "^4.17.21",
     "morgan": "1.10.0",
-    "pug": "2.0.4",
-    "request": "2.88.2",
-    "request-promise-native": "1.0.8",
+    "pug": "^3.0.2",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8",
     "serve-favicon": "2.5.0"
   }
 }
