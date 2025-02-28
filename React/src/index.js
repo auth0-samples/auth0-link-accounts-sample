@@ -34,8 +34,8 @@ const mainProviderConfig = {
 
 const linkProviderConfig = {
   ...config,
-  context: linkContext,
-  scope: 'openid email profile',
+  // context: linkContext,
+  scope: 'openid email profile read:current_user',
   redirectUri: `${window.location.origin}?secondary`,
   skipRedirectCallback: window.location.href.includes('?primary'),
 };

@@ -17,7 +17,12 @@ export const useFetch = (url) => {
         },
       });
       const data = await response.json();
-      setProfile(data);
+      if (response.ok) {
+        setProfile(data);
+      } else {
+        console.log("useFetch error response=" + JSON.stringify(data));
+        throw new Error(`Response status: ${response.status}`);
+      }
     } catch (error) {
       setError(error);
     } finally {

@@ -17,7 +17,7 @@ const LinkedAccounts = () => {
   const { domain } = getConfig();
   const { getAccessTokenSilently, user } = useAuth0();
 
-  const { loginWithPopup, getIdTokenClaims } = useAuth0(linkContext);
+  const { loginWithPopup, loginWithRedirect, getIdTokenClaims } = useAuth0(linkContext);
   const { profile, loading, error, refetch } = useFetch(
     `https://${domain}/api/v2/users/${user.sub}`
   );
@@ -46,7 +46,7 @@ const LinkedAccounts = () => {
       return;
     }
 
-    await fetch(`https://${domain}/api/v2/users/${sub}/identities`, {
+    const response = await fetch(`https://${domain}/api/v2/users/${sub}/identities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -56,7 +56,11 @@ const LinkedAccounts = () => {
         link_with: targetUserIdToken,
       }),
     });
-    refetch();
+
+   if(!response.ok){
+    console.log(">>>>Error",JSON.stringify(await response.json()))
+   }
+   // refetch();
   };
 
   const unlinkAccount = async (profile, i) => {
