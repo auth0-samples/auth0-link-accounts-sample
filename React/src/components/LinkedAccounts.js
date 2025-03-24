@@ -17,7 +17,7 @@ const LinkedAccounts = () => {
   const { domain } = getConfig();
   const { getAccessTokenSilently, user } = useAuth0();
 
-  const { loginWithPopup, loginWithRedirect, getIdTokenClaims } = useAuth0(linkContext);
+  const { loginWithPopup, getIdTokenClaims } = useAuth0(linkContext);
   const { profile, loading, error, refetch } = useFetch(
     `https://${domain}/api/v2/users/${user.sub}`
   );

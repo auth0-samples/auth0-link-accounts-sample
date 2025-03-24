@@ -4,7 +4,7 @@ export function getConfig() {
   return {
     domain: configJson.domain,
     clientId: configJson.clientId,
-    audience: "https://gyaneshgouraw.auth0.com/api/v2/"
+    audience: configJson.audience
 
   };
 }
