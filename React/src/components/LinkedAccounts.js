@@ -25,7 +25,7 @@ const LinkedAccounts = () => {
   const [linkError, setLinkError] = useState(null);
 
   const linkAccount = async () => {
-    const accessToken = await getAccessTokenSilently();
+    const accessToken = await getAccessTokenSilently({scope:"openid email profile read:current_user update:current_user_identities"});
     const { sub } = user;
 
     await loginWithPopup({
@@ -60,12 +60,12 @@ const LinkedAccounts = () => {
    if(!response.ok){
     console.log(">>>>Error",JSON.stringify(await response.json()))
    }
-   // refetch();
+   refetch();
   };
 
   const unlinkAccount = async (profile, i) => {
     const { provider, user_id } = profile;
-    const accessToken = await getAccessTokenSilently();
+    const accessToken = await getAccessTokenSilently({scope:"openid email profile read:current_user update:current_user_identities"});
     const { sub } = await user;
     await fetch(
       `https://${domain}/api/v2/users/${sub}/identities/${provider}/${user_id}`,
